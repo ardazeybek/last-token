@@ -61,30 +61,18 @@ You keep working like always. Last Token works in the background and shows you w
 
 ---
 
-> [!WARNING]
-> ## Most “token savers” make your limit run out FASTER.
-> Your plan is **not** billed in tokens. A token that Claude writes into its prompt cache costs
-> **about 30 times** more of your quota than a token it reads from it. Tools that cut, compress or
-> rewrite your context to “save 90 % of tokens” keep forcing those expensive cache writes.
-> **They shrink the cheap number and grow the expensive one.** We measured it: our own early
-> token-cutting version used **34 % fewer tokens and cost 69 % more.**
->
-> Last Token is built on the real formula, so it attacks the expensive tokens instead.
-> Want it? **[Download the installer](https://github.com/ardazeybek/last-token/releases/latest/download/install-last-token.md) and drop it into Claude Code. That's the whole install.**
+<p align="center"><a href="https://github.com/ardazeybek/last-token/releases/latest/download/install-last-token.md"><img src="assets/warning.png" width="100%" alt="Read this first. Most token savers make your limit run out faster. Your plan is not billed in tokens: a token written into the prompt cache costs about 30 times more quota than one read from it. Our own early version: tokens -34 %, quota +69 %. Download the installer and drop it into Claude Code." /></a></p>
 
 ---
 
 ## ⚡ Install in 30 seconds
 
-<img src="assets/install.png" alt="1 download the installer, 2 drop it into Claude Code and press Enter, 3 open a new chat" width="100%">
+<p align="center"><a href="https://github.com/ardazeybek/last-token/releases/latest/download/install-last-token.md"><img src="assets/install.png" width="100%" alt="1 download the installer, 2 drop it into Claude Code and press Enter, 3 open a new chat" /></a></p>
 
-1. **[Download the installer](https://github.com/ardazeybek/last-token/releases/latest/download/install-last-token.md)** (`install-last-token.md`, 1 KB).
-2. **Drag it into Claude Code** (terminal, desktop app, VS Code, JetBrains, any of them) **and press Enter.**
-   You don't type anything: the file tells Claude what to do.
-3. **Open a new chat.** Done.
+<p align="center"><b><a href="https://github.com/ardazeybek/last-token/releases/latest/download/install-last-token.md">⬇ Download the installer</a></b> (1 KB) · works in the terminal, desktop app, VS Code and JetBrains</p>
 
-Claude downloads it, installs it for **every** Claude Code session, **tunes it to your own
-usage** (your models, your typical session size), checks every part and ends with:
+<details>
+<summary><b>What the installer checks at the end</b></summary>
 
 ```text
   ✅ Global mode                              active in every Claude Code session
@@ -97,7 +85,7 @@ usage** (your models, your typical session size), checks every part and ends wit
   ★ Last Token 1.1.0 is installed. Open a NEW Claude Code session; the status line shows 'last-token ✓'.
 ```
 
-Open a new chat. You'll see **`last-token ✓`** at the bottom. That's it: it now works on its own, in every project.
+</details>
 
 ### 🔄 Updates itself
 
@@ -142,6 +130,9 @@ Everyone optimizes **tokens**. But your 5-hour window doesn't count tokens. So w
 
 <img src="assets/quota-formula.png" alt="cache write 4.6 points, output 3-7 points, cache read 0.15 points per million tokens" width="100%">
 
+<details>
+<summary><b>The numbers as a table</b></summary>
+
 | what Claude does with a token | share of your 5-hour window per 1M tokens | relative cost |
 |---|---|---|
 | **writes** it into the prompt cache (new context, after a compaction, after a long break) | **≈ 4.6 points** | **≈ 30×** |
@@ -150,16 +141,14 @@ Everyone optimizes **tokens**. But your 5-hour window doesn't count tokens. So w
 
 *(1 point = 1 % of the 5-hour window, Pro plan. Method and raw numbers: [docs/RESEARCH.md](docs/RESEARCH.md).)*
 
-**So in plain words:**
+</details>
 
-- Context that **just sits there** in your chat is almost free. Re-reading it costs ~nothing.
-- What burns your limit is every time the cache has to be **written again**: a compaction with a
-  summary, a long coffee break (the cache expires), a changed system prompt, a subagent that
-  starts from zero.
-- Even the API price list gets this wrong for subscriptions: it says cache writes are 10× reads.
-  For your **plan quota** it is about **30×**.
+<p align="center"><img src="assets/plain-words.png" width="100%" alt="So in plain words: context that just sits there is almost free. Every time the cache is written again (a summary compaction, a long break, a changed system prompt, a fresh subagent) costs about 30 times more. The API price list says 10 times; on plan quota it is about 30 times." /></p>
 
-Then we looked at **7 days of real use**, weighted by this formula:
+<p align="center"><img src="assets/quota-share.png" width="100%" alt="Where the quota went in 7 days of real use: reading the cached chat 36-42 %, writing the cache 26-34 %, subagents 20-24 %, output 8-13 %." /></p>
+
+<details>
+<summary><b>The same as a table</b></summary>
 
 | where the quota actually went | share |
 |---|---|
@@ -168,7 +157,7 @@ Then we looked at **7 days of real use**, weighted by this formula:
 | subagents (each one re-writes ~36K of base context) | 20–24 % |
 | Claude's output | 8–13 % |
 
-Every lever in Last Token comes from this table.
+</details>
 
 ---
 
@@ -176,19 +165,16 @@ Every lever in Last Token comes from this table.
 
 <img src="assets/token-trap.png" alt="Fewer tokens, bigger bill: -34% tokens, +69% cost" width="100%">
 
-This is **our own** mistake, measured. An early version of Last Token compacted the context early
-and often. The token counter looked amazing: **−34 %**. The bill: **+69 %**. Every compaction
-threw away the cheap cached context and paid to write a new one.
-
-Same story with **LLM-written summaries** (what Claude Code does when it auto-compacts): the
-summarizer call misses the cache and re-writes the whole conversation. In our benchmark that
-alone made the run cost **+57 % quota**.
+<sub>Same story with LLM-written summaries (what Claude Code does when it auto-compacts): the summarizer call misses the cache and re-writes the whole conversation. In our benchmark that alone cost <b>+57 % quota</b>.</sub>
 
 ### What this means for popular token tools
 
-They are good projects made by smart people, and some of them are useful. But almost all of them
-measure **tokens**, and tokens are the wrong unit for a subscription. Here is an honest look,
-through the formula:
+<p align="center"><img src="assets/tools.png" width="100%" alt="Popular token tools through the formula. rtk: -1.2 % tokens, within noise. caveman: right target, but output is only 8-13 % of quota. context-mode: keeps big outputs out, can help. claudectx: saves cheap cached reads, cutting instructions can hurt. Compressors: each rewrite moves the cached prefix, pruning a warm cache cost +92 %. Rule of thumb: a tool that changes your context mid-session is likely costing you quota." /></p>
+
+<p align="center"><sub><a href="https://github.com/rtk-ai/rtk">rtk</a> · <a href="https://github.com/JuliusBrussee/caveman">caveman</a> · <a href="https://github.com/mksglu/context-mode">context-mode</a> · <a href="https://github.com/horilla/claudectx">claudectx</a></sub></p>
+
+<details>
+<summary><b>The full comparison as a table</b></summary>
 
 | project | what it does | what it saves, by the formula | watch out |
 |---|---|---|---|
@@ -198,10 +184,7 @@ through the formula:
 | [claudectx](https://github.com/horilla/claudectx) & CLAUDE.md trimmers | shrink CLAUDE.md / memory files loaded every request | those files are cached after the first request: you mostly save **cheap reads** | cutting instructions can make Claude worse. We tried it and removed it |
 | “compress / summarize the context” tools | rewrite or prune the history mid-session to cut tokens | every rewrite **moves the cached prefix**, so the next request re-writes the cache | the classic trap: in our stress test, pruning while the cache was warm cost **+92 % quota** |
 
-**Rule of thumb:** a tool that changes what's *already* in your context mid-session is very likely
-costing you quota, however good its token chart looks. Last Token only touches the context when
-the cache is **already gone** (after a break) or **has to be rebuilt anyway** (a compaction), and
-then it does it **without** an extra model call.
+</details>
 
 > Last Token works alongside these tools. If you use one, compare your **5-hour % meter**, not its token report.
 
@@ -210,6 +193,9 @@ then it does it **without** an extra model call.
 ## ⚙️ How it works
 
 <img src="assets/how-it-works.png" alt="Six levers" width="100%">
+
+<details>
+<summary><b>Each lever in plain words</b></summary>
 
 | | lever | the plain-words version |
 |---|---|---|
@@ -220,18 +206,18 @@ then it does it **without** an extra model call.
 | 05 | **Cheap look-ups** | Search/explore subagents only read and grep. They now run on Haiku: about 5× cheaper for the same answer. Your real work stays on your model. |
 | 06 | **Big-file guard** | A whole read of a huge file is stopped and Claude is told to grep and read only the part it needs. |
 
-**What it never does** (we tested these and they hurt): it never lowers Claude's effort, never
-cuts Claude's instructions or tool descriptions, never touches your context while the cache is warm.
+</details>
 
-**Under the hood:** one Python file (`system/ctx.py`, standard library only), three Claude Code
-hooks, a small mod (TypeScript, Claude Code's own mods API). No server, no MCP, no account, no
-network calls, no telemetry. Everything stays on your machine.
+<p align="center"><img src="assets/never.png" width="100%" alt="What it never does: lower Claude's effort, cut Claude's instructions or tool descriptions, touch your context while the cache is warm. Under the hood: one Python file, standard library only, three Claude Code hooks and one small mod, no server, no account, no telemetry." /></p>
 
 ---
 
 ## 📊 The benchmark
 
 <img src="assets/benchmark.png" alt="Benchmark: plain 4.99%, LLM-summary 7.84%, Last Token 3.60%" width="100%">
+
+<details>
+<summary><b>Exact numbers and what is tested</b></summary>
 
 A reproducible 32-step coding task in a fresh repo. Claude is given **10 house rules** early and
 **5 facts** only in chat, then has to keep following and using them through compaction after
@@ -242,6 +228,8 @@ compaction, while integration tests check the code. Scored on **plan quota**, no
 | plain Claude Code | 4.99 % | 98 % | 94 % | 100 % | ok |
 | LLM-summary compaction | 7.84 % (**+57 %**) | 97 % | 94 % | 100 % | ok |
 | **Last Token 1.0** | **3.60 % (−28 %)** | **98 %** | **95 %** | **100 %** | **ok** |
+
+</details>
 
 20+ rounds, every failed idea included, in [docs/BENCHMARK.md](docs/BENCHMARK.md). Raw scored runs in
 [`results/`](results/). Run it yourself: [bench/README.md](bench/README.md).
@@ -315,4 +303,3 @@ Internals: [docs/DESIGN.md](docs/DESIGN.md) · [docs/RESEARCH.md](docs/RESEARCH.
   <a href="LICENSE"><img src="assets/license.png" width="100%" alt="MIT license. Free, yours to use: use it, change it, share it. No account, no telemetry. Copyright Arda Zeybek. An independent project, not affiliated with or endorsed by Anthropic. Claude and Claude Code are trademarks of Anthropic. Did Last Token give you back some hours of Claude? A star helps other people find it: press Star at the top of this page." /></a>
 </p>
 
-<p align="center"><sub><a href="LICENSE">Read the MIT license</a> · ⭐ <b>Star</b> is the button at the top right of this page</sub></p>

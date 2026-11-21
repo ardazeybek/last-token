@@ -1,0 +1,35 @@
+<!doctype html>
+<!-- warning.html — source of assets/warning.png: the headline warning (token savers burn the limit faster) with the call to install -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+.panel{border-left:8px solid var(--brand);display:grid;grid-template-columns:1.25fr 1fr;gap:48px;align-items:center}
+.w{display:flex;gap:10px;align-items:center}
+.w svg{width:22px;height:22px;fill:none;stroke:var(--brand);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+h1{font-size:42px;margin-top:14px}
+h1 em{font-style:normal;color:var(--brand)}
+.lede{font-size:19px}
+.cta{margin-top:26px;display:inline-flex;gap:10px;align-items:center;background:var(--ink);color:var(--paper);font-weight:600;font-size:17px;padding:12px 20px;border-radius:10px}
+.cta svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.cta+span{margin-left:14px;font-size:15px;color:var(--ink-3)}
+.box{background:#fff;border:1px solid var(--edge);border-radius:16px;padding:28px 30px}
+.box .t{font-size:14px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.row{margin-top:20px}
+.row .l{display:flex;justify-content:space-between;align-items:baseline;font-size:17px;color:var(--ink-2)}
+.row .l b{font-size:26px;color:var(--ink);font-weight:700}
+.bar{height:16px;border-radius:5px;margin-top:8px;background:var(--grid);position:relative;overflow:hidden}
+.bar i{position:absolute;inset:0 auto 0 0;border-radius:5px}
+.foot{margin-top:22px;padding-top:16px;border-top:1px solid var(--rule);font-size:16px;color:var(--ink-2);line-height:1.45}
+</style></head><body><div class="panel" id="cv">
+<div>
+ <div class="w"><svg viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.01"/></svg><span class="kicker">Read this first</span></div>
+ <h1>Most “token savers” make your limit run out <em>faster</em>.</h1>
+ <p class="lede">Your plan is not billed in tokens. A token written into the prompt cache costs about <b>30×</b> more quota than one read from it. Cutting and rewriting your context keeps forcing those expensive writes.</p>
+ <div class="cta"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>Download the installer</div><span>Drop it into Claude Code. That's all.</span>
+</div>
+<div class="box">
+ <div class="t">Our own early version, measured</div>
+ <div class="row"><div class="l">Tokens <b>−34 %</b></div><div class="bar"><i style="width:66%;background:var(--base)"></i></div></div>
+ <div class="row"><div class="l">Quota you paid <b style="color:var(--brand)">+69 %</b></div><div class="bar"><i style="width:100%;background:var(--cost)"></i></div></div>
+ <div class="foot"><b>They shrink the cheap number and grow the expensive one.</b> Last Token goes after the expensive tokens instead.</div>
+</div>
+</div><script src="fit.js"></script></body></html>

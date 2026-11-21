@@ -1,0 +1,29 @@
+<!doctype html>
+<!-- tools.html — source of assets/tools.png: popular token tools seen through the quota formula -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+.g{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:30px}
+.c{background:#fff;border:1px solid var(--edge);border-radius:14px;padding:20px 18px 20px;display:flex;flex-direction:column}
+.c h2{font-family:var(--mono);font-size:17px;font-weight:500}
+.c .d{font-size:15px;color:var(--ink-3);margin-top:6px;line-height:1.4;min-height:63px}
+.k{margin-top:14px;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.c p{font-size:15px;color:var(--ink-2);line-height:1.45;margin-top:4px}
+.v{margin-top:auto;padding-top:14px}
+.pill{display:inline-block;font-size:13px;font-weight:600;padding:4px 10px;border-radius:999px}
+.ok{background:#E6EDDF;color:#4A6B33}.mid{background:#F0EEE6;color:var(--ink-2)}.bad{background:var(--brand-soft);color:#9A4A2E}
+.rule{margin-top:26px;display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center;background:var(--ink);color:var(--paper);border-radius:14px;padding:22px 26px}
+.rule b{font-family:var(--serif);font-size:24px;font-weight:600}
+.rule p{font-size:17px;line-height:1.5;color:#D6D4CC}
+</style></head><body><div class="panel" id="cv">
+<div class="kicker">An honest look</div>
+<h1 style="font-size:38px;margin-top:10px">Popular token tools, through the formula</h1>
+<p class="lede">Good projects by smart people. But most measure tokens, and tokens are the wrong unit for a subscription.</p>
+<div class="g">
+ <div class="c"><h2>rtk</h2><div class="d">filters shell output before Claude sees it</div><div class="k">Watch out</div><p>−1.2 % tokens in our benchmark, within noise. Read / Grep / Glob skip it.</p><div class="v"><span class="pill mid">small, safe</span></div></div>
+ <div class="c"><h2>caveman</h2><div class="d">makes Claude answer in very short prose</div><div class="k">Watch out</div><p>Right target, but output is only 8–13 % of quota. Answers get harder to read.</p><div class="v"><span class="pill mid">right aim, small share</span></div></div>
+ <div class="c"><h2>context-mode</h2><div class="d">runs heavy tool work in a sandbox</div><div class="k">Watch out</div><p>Keeps big outputs out. A different way of working: measure your quota.</p><div class="v"><span class="pill ok">can help</span></div></div>
+ <div class="c"><h2>claudectx</h2><div class="d">trims CLAUDE.md and memory files</div><div class="k">Watch out</div><p>Those are cheap cached reads. Cutting instructions can make Claude worse.</p><div class="v"><span class="pill mid">saves cheap tokens</span></div></div>
+ <div class="c"><h2>compressors</h2><div class="d">rewrite or prune history mid-session</div><div class="k">Watch out</div><p>Each rewrite moves the cached prefix. Pruning a warm cache cost <b>+92 %</b>.</p><div class="v"><span class="pill bad">the classic trap</span></div></div>
+</div>
+<div class="rule"><b>Rule of thumb</b><p>If a tool changes what's already in your context mid-session, it is likely costing you quota. Last Token only touches it when the cache is already gone or must be rebuilt anyway, with no extra model call.</p></div>
+</div><script src="fit.js"></script></body></html>

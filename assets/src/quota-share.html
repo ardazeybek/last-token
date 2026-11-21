@@ -1,0 +1,29 @@
+<!doctype html>
+<!-- quota-share.html — source of assets/quota-share.png: where 7 days of real quota went, by the formula -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+.stack{display:flex;height:64px;border-radius:12px;overflow:hidden;margin-top:34px;gap:3px}
+.stack div{display:flex;align-items:center;padding-left:16px;color:#fff;font-weight:700;font-size:20px}
+.leg{display:grid;grid-template-columns:39fr 30fr 22fr 11fr;gap:3px;margin-top:14px}
+.leg div{font-size:16px;color:var(--ink-2);line-height:1.4;padding-right:10px}
+.leg b{display:block;color:var(--ink);font-size:18px;font-weight:600}
+.leg span{color:var(--ink-3)}
+.out{margin-top:30px;padding-top:20px;border-top:1px solid var(--rule);font-size:18px;color:var(--ink-2)}
+</style></head><body><div class="panel" id="cv">
+<div class="kicker">7 days of real use</div>
+<h1 style="font-size:38px;margin-top:10px">Where the quota actually went</h1>
+<p class="lede">A week of real Claude Code sessions, weighted by the quota formula.</p>
+<div class="stack">
+ <div style="flex:39;background:var(--base)">36–42 %</div>
+ <div style="flex:30;background:var(--brand)">26–34 %</div>
+ <div style="flex:22;background:var(--cost)">20–24 %</div>
+ <div style="flex:11;background:#8E8B80">8–13 %</div>
+</div>
+<div class="leg">
+ <div><b>Reading the cached chat</b><span>cheap per token, but every turn</span></div>
+ <div><b>Writing the cache</b><span>new content, re-writes after breaks and compactions</span></div>
+ <div><b>Subagents</b><span>each re-writes ~36K of base context</span></div>
+ <div><b>Output</b><span>Claude's answers</span></div>
+</div>
+<div class="out"><b style="color:var(--ink)">Every lever in Last Token comes from this bar.</b> The orange and dark parts are where it saves.</div>
+</div><script src="fit.js"></script></body></html>

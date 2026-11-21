@@ -1,0 +1,30 @@
+<!doctype html>
+<!-- never.html — source of assets/never.png: what Last Token never does, and what it is made of -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:8px}
+.b{border-radius:16px;padding:28px 30px}
+.no{background:#fff;border:1px solid var(--edge)}
+.yes{background:var(--brand-soft)}
+.b h2{font-family:var(--serif);font-weight:600;font-size:26px}
+.b .s{font-size:16px;color:var(--ink-3);margin-top:4px}
+ul{list-style:none;margin-top:18px}
+li{display:flex;gap:12px;align-items:flex-start;font-size:18px;color:var(--ink-2);line-height:1.4;padding:9px 0;border-top:1px solid var(--rule)}
+.yes li{border-color:#EBCFC1}
+li svg{flex:none;width:22px;height:22px;margin-top:1px;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.no svg{stroke:var(--brand)}.yes svg{stroke:var(--ink)}
+li b{color:var(--ink);font-weight:600}
+</style></head><body><div class="panel" id="cv" style="padding-top:44px">
+<div class="two">
+ <div class="b no"><h2>What it never does</h2><div class="s">We tested these. They hurt.</div><ul>
+  <li><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Lower Claude's effort</li>
+  <li><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Cut Claude's instructions or tool descriptions</li>
+  <li><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Touch your context while the cache is warm</li>
+ </ul></div>
+ <div class="b yes"><h2>Under the hood</h2><div class="s">Small enough to read in one sitting.</div><ul>
+  <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg><span><b>One Python file</b>, standard library only</span></li>
+  <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg><span><b>Three Claude Code hooks</b> and one small mod</span></li>
+  <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg><span><b>Stays on your machine:</b> no server, no account, no telemetry</span></li>
+ </ul></div>
+</div>
+</div><script src="fit.js"></script></body></html>

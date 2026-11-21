@@ -1,0 +1,23 @@
+<!doctype html>
+<!-- plain-words.html — source of assets/plain-words.png: the quota formula in three plain sentences -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+.g{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px}
+.c{background:#fff;border:1px solid var(--edge);border-radius:14px;padding:24px 24px 26px}
+.big{font-family:var(--serif);font-weight:600;font-size:44px;line-height:1}
+.c h2{font-size:21px;font-weight:600;margin-top:14px;line-height:1.25}
+.c p{font-size:16px;color:var(--ink-2);line-height:1.5;margin-top:8px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.tags span{font-size:14px;padding:3px 9px;border-radius:999px;background:var(--brand-soft);color:#9A4A2E;font-weight:500}
+.vs{display:flex;gap:12px;align-items:baseline;margin-top:2px}
+.vs s{color:var(--ink-3);font-size:28px;font-family:var(--serif)}
+</style></head><body><div class="panel" id="cv">
+<div class="kicker">So in plain words</div>
+<h1 style="font-size:38px;margin-top:10px">Sitting context is almost free. Re-writing it is what burns.</h1>
+<div class="g">
+ <div class="c"><div class="big" style="color:var(--base)">≈ 0</div><h2>Context that just sits there</h2><p>Everything already in your chat is re-read from the cache each turn. That costs next to nothing.</p></div>
+ <div class="c"><div class="big" style="color:var(--brand)">30×</div><h2>Every time the cache is written again</h2><p>That is what eats your 5-hour window.</p>
+  <div class="tags"><span>a summary compaction</span><span>a long break</span><span>a changed system prompt</span><span>a fresh subagent</span></div></div>
+ <div class="c"><div class="vs"><s>10×</s><div class="big">30×</div></div><h2>Even the price list gets it wrong</h2><p>The API list says a cache write costs 10× a read. On your <b>plan quota</b> it is about 30×.</p></div>
+</div>
+</div><script src="fit.js"></script></body></html>
