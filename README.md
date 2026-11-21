@@ -101,12 +101,9 @@ Open a new chat. You'll see **`last-token ✓`** at the bottom. That's it: it no
 
 ### 🔄 Updates itself
 
-Every time Claude Code starts, Last Token checks GitHub in the background (at most every 3 hours,
-it never slows the start). A new version is pulled, installed and checked with `doctor` on its own.
-If anything goes wrong, it opens **one** background Claude Code session that reinstalls the latest
-version cleanly (log: `~/.claude/last-token/update.log`). Turn it off with
-`echo '{"auto": false}' > ~/.claude/last-token/update.json`; update by hand with
-`python3 ~/.claude/last-token/ctx.py self-update`.
+<p align="center"><img src="assets/updates.png" width="100%" alt="Updates itself: you open Claude Code, it checks GitHub quietly in the background at most every 3 hours, installs the new version and runs a full self-check. If something broke, one background session fixes it for you. To turn it off: echo {auto: false} into ~/.claude/last-token/update.json" /></p>
+
+<sub>Log: <code>~/.claude/last-token/update.log</code> · Update by hand: <code>python3 ~/.claude/last-token/ctx.py self-update</code></sub>
 
 <details>
 <summary><b>Rather paste a sentence?</b></summary>
@@ -253,7 +250,12 @@ compaction, while integration tests check the code. Scored on **plan quota**, no
 
 ## ❓ FAQ
 
-**Will Claude get dumber?** No. That was the first thing we tested and the reason several “savings”
+<p align="center"><img src="assets/faq.png" width="100%" alt="Questions people ask. Will Claude get worse? No, rules and memory stay as good or better. Do I need to work differently? No. Pro or Max? Both. Which models? All. Does it send my data? No telemetry, only the update check talks to GitHub. Can I turn it off for one project? Yes, add an empty file named .no-last-token." /></p>
+
+<details>
+<summary><b>The same answers in text, plus one more</b></summary>
+
+**Will Claude get worse?** No. That was the first thing we tested and the reason several “savings”
 were thrown out. Rule-following and recall are equal or better in every shipped round.
 
 **Do I need to change how I work?** No. Keep chatting. You never have to start a new chat
@@ -263,11 +265,14 @@ were thrown out. Rule-following and recall are equal or better in every shipped 
 
 **Which models?** All Claude models in Claude Code. Each one gets its own tuned compaction point.
 
-**Does it send anything anywhere?** No. No network calls at all.
+**Does it send my data anywhere?** No telemetry. The only network call is the update check to GitHub, and you can turn it off.
 
 **Where do my notes live?** `~/.claude/last-token/store/<folder>/.ctx/`: plain Markdown files you can read.
 
 **How do I turn it off for one project?** Create an empty file named `.no-last-token` in it.
+</details>
+
+Another question? [Ask in Discussions](https://github.com/ardazeybek/last-token/discussions).
 
 ---
 
@@ -297,15 +302,17 @@ Internals: [docs/DESIGN.md](docs/DESIGN.md) · [docs/RESEARCH.md](docs/RESEARCH.
 ## 💬 Support
 
 <p align="center">
-  <a href="https://github.com/ardazeybek/last-token/issues"><img src="assets/support-issues.png" width="32%" alt="Bugs and ideas: GitHub Issues" /></a>
-  <a href="https://github.com/ardazeybek/last-token/discussions"><img src="assets/support-discussions.png" width="32%" alt="Questions: GitHub Discussions" /></a>
-  <a href="https://github.com/ardazeybek/last-token/security/advisories/new"><img src="assets/support-security.png" width="32%" alt="Security problems: report privately" /></a>
+  <a href="https://github.com/ardazeybek/last-token/issues/new/choose"><img src="assets/support-issues.png" width="32%" alt="Found a bug? Open a GitHub Issue" /></a>
+  <a href="https://github.com/ardazeybek/last-token/discussions"><img src="assets/support-discussions.png" width="32%" alt="Ideas and questions: GitHub Discussions" /></a>
+  <a href="mailto:quantastudio.dev@gmail.com"><img src="assets/support-mail.png" width="32%" alt="Anything else: send an email" /></a>
 </p>
+
+<p align="center"><sub>Security problem? Please email privately, see <a href="SECURITY.md">SECURITY.md</a>.</sub></p>
 
 ## 📜 License
 
 <p align="center">
-  <a href="https://github.com/ardazeybek/last-token"><img src="assets/license.png" width="100%" alt="MIT license. Free, yours to use: use it, change it, share it. No account, no telemetry. Copyright Arda Zeybek. An independent project, not affiliated with or endorsed by Anthropic. Claude and Claude Code are trademarks of Anthropic. Did Last Token give you back some hours of Claude? A star on GitHub helps other people find it." /></a>
+  <a href="LICENSE"><img src="assets/license.png" width="100%" alt="MIT license. Free, yours to use: use it, change it, share it. No account, no telemetry. Copyright Arda Zeybek. An independent project, not affiliated with or endorsed by Anthropic. Claude and Claude Code are trademarks of Anthropic. Did Last Token give you back some hours of Claude? A star helps other people find it: press Star at the top of this page." /></a>
 </p>
 
-<p align="center"><sub><a href="LICENSE">Read the MIT license</a> · <a href="https://github.com/ardazeybek/last-token">⭐ Star on GitHub</a></sub></p>
+<p align="center"><sub><a href="LICENSE">Read the MIT license</a> · ⭐ <b>Star</b> is the button at the top right of this page</sub></p>

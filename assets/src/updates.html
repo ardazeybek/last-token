@@ -1,0 +1,25 @@
+<!doctype html>
+<!-- updates.html — source of assets/updates.png: how Last Token updates itself (start → check → install → repair) -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:34px;position:relative}
+.s{background:#fff;border:1px solid var(--edge);border-radius:14px;padding:22px 22px 24px;position:relative}
+.s:not(:last-child)::after{content:"";position:absolute;right:-16px;top:44px;width:14px;height:2px;background:var(--brand)}
+.ic{width:46px;height:46px;border-radius:50%;background:var(--brand-soft);display:grid;place-items:center}
+.ic svg{width:24px;height:24px;fill:none;stroke:#C4633F;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.s h2{font-family:var(--serif);font-weight:600;font-size:21px;margin-top:16px;line-height:1.2}
+.s p{font-size:16px;color:var(--ink-2);line-height:1.45;margin-top:6px}
+.s.alt{background:transparent;border-style:dashed}
+.off{margin-top:26px;display:flex;gap:12px;align-items:center;font-size:16px;color:var(--ink-3)}
+.off code{font-family:var(--mono);font-size:14px;background:#F0EEE6;border:1px solid var(--edge);border-radius:6px;padding:3px 8px;color:var(--ink)}
+</style></head><body><div class="panel" id="cv">
+<div class="kicker" style="color:var(--brand);letter-spacing:.12em;font-weight:600;font-size:14px">Updates itself</div>
+<h1 style="font-size:40px;margin-top:10px">Always the newest version. You do nothing.</h1>
+<div class="flow">
+ <div class="s"><div class="ic"><svg viewBox="0 0 24 24"><path d="M5 4l14 8-14 8z"/></svg></div><h2>You open Claude Code</h2><p>Start working as usual. Nothing waits.</p></div>
+ <div class="s"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></div><h2>It checks GitHub</h2><p>Quietly, in the background. At most every 3 hours.</p></div>
+ <div class="s"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg></div><h2>It installs and tests</h2><p>New version in, then a full self-check.</p></div>
+ <div class="s alt"><div class="ic"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-2.5z"/></svg></div><h2>Something broke?</h2><p>One background session fixes it for you.</p></div>
+</div>
+<div class="off">Rather not? <code>echo '{"auto": false}' &gt; ~/.claude/last-token/update.json</code></div>
+</div><script src="fit.js"></script></body></html>

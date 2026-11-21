@@ -1,0 +1,22 @@
+<!doctype html>
+<!-- faq.html — source of assets/faq.png: the short answers to the common questions -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+.qs{display:grid;grid-template-columns:1fr 1fr;gap:0 56px;margin-top:22px}
+.q{padding:22px 0;border-top:1px solid var(--rule);display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start}
+.a{font:700 15px var(--sans);padding:6px 11px;border-radius:999px;background:var(--brand-soft);color:#B35A3C;white-space:nowrap;margin-top:2px;width:66px;text-align:center}
+.a.y{background:#E4EADC;color:#56693F}
+.q h2{font-family:var(--serif);font-weight:600;font-size:22px;line-height:1.25}
+.q p{font-size:17px;color:var(--ink-2);line-height:1.45;margin-top:5px}
+.q code{font-family:var(--mono);font-size:15px}
+</style></head><body><div class="panel" id="cv">
+<h1 style="font-size:40px">Questions people ask</h1>
+<div class="qs">
+ <div class="q"><span class="a">No</span><div><h2>Will Claude get worse?</h2><p>We tested it first. Rules and memory stay as good or better.</p></div></div>
+ <div class="q"><span class="a">No</span><div><h2>Do I need to work differently?</h2><p>Keep chatting. Long chats are where it helps most.</p></div></div>
+ <div class="q"><span class="a y">Both</span><div><h2>Pro or Max?</h2><p>Measured on Pro. The idea is the same on Max.</p></div></div>
+ <div class="q"><span class="a y">All</span><div><h2>Which models?</h2><p>Every Claude model. Each gets its own tuned setting.</p></div></div>
+ <div class="q"><span class="a">No</span><div><h2>Does it send my data?</h2><p>No telemetry. Only the update check talks to GitHub.</p></div></div>
+ <div class="q"><span class="a y">Yes</span><div><h2>Can I turn it off for one project?</h2><p>Add an empty file named <code>.no-last-token</code>.</p></div></div>
+</div>
+</div><script src="fit.js"></script></body></html>

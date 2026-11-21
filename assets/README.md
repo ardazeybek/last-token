@@ -30,6 +30,8 @@ assets/src/render.sh banner      # one
 Needs a Chromium (Playwright cache or system) and network for Google Fonts. Keep each PNG under 400 KB.
 - real-session.png — real `/lt-savings` output from one long session (src/real-session.html)
 - social.png — GitHub social preview 1280×640 (src/social.html), upload in Settings → Social preview
-- support-*.png — Clipio-style support cards: issues, discussions, security (src/support-*.html + support.css)
+- support-*.png — Clipio-style support cards: issues, discussions, mail (src/support-*.html + support.css)
 - contribute.png — three ways to help, links to CONTRIBUTING.md (src/contribute.html)
 - license.png — MIT, independence note, star request (src/license.html)
+- updates.png — self-update flow (src/updates.html)
+- faq.png — short FAQ answers (src/faq.html)
