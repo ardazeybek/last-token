@@ -1,0 +1,29 @@
+<!doctype html>
+<!-- contrib-ways.html — source of assets/contrib-ways.png: top of CONTRIBUTING.md, four ways to help without code -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;margin-top:38px}
+.c{background:#fff;border:1px solid var(--edge);border-radius:16px;padding:26px 28px;display:flex;gap:22px;box-shadow:6px 6px 0 var(--edge)}
+.c.top{background:var(--ink);border-color:var(--ink);box-shadow:6px 6px 0 var(--brand)}
+.c.top h2,.c.top .tag{color:var(--paper)} .c.top p{color:#C9C7BE}
+.ic{flex:none;width:56px;height:56px;border-radius:50%;background:var(--brand-soft);display:grid;place-items:center}
+.c.top .ic{background:var(--brand)}
+.ic svg{width:28px;height:28px}
+.c h2{font-family:var(--serif);font-size:26px;font-weight:600;line-height:1.15}
+.c p{font-size:18px;line-height:1.5;color:var(--ink-2);margin-top:6px}
+.tag{font:600 13px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--brand);margin-bottom:8px}
+</style></head><body><div class="panel" id="cv">
+<div class="kicker">Contributing</div>
+<h1 style="margin-top:14px">You don't need to write code to help.</h1>
+<p class="lede">Last Token gets better with every real number, every bug and every unclear sentence someone points out.</p>
+<div class="grid">
+ <div class="c top"><div class="ic"><svg viewBox="0 0 28 28"><rect x="4" y="15" width="5" height="9" rx="1.5" fill="#FAF9F5"/><rect x="11.5" y="9" width="5" height="15" rx="1.5" fill="#FAF9F5"/><rect x="19" y="4" width="5" height="20" rx="1.5" fill="#FAF9F5"/></svg></div>
+  <div><div class="tag">Most valuable</div><h2>Share your quota numbers</h2><p>Use it for a week, then post what the developer pane says. Other plans and models beat any benchmark.</p></div></div>
+ <div class="c"><div class="ic"><svg viewBox="0 0 28 28"><ellipse cx="14" cy="16" rx="6.5" ry="8" fill="#D97757"/><circle cx="14" cy="7" r="3.5" fill="#D97757"/><path d="M4 12l4 2M24 12l-4 2M3 19h4.5M25 19h-4.5M5 25l3.5-3M23 25l-3.5-3" stroke="#D97757" stroke-width="2" stroke-linecap="round"/></svg></div>
+  <div><h2>Report a bug</h2><p>What you did, what you expected, what happened. That's the whole recipe.</p></div></div>
+ <div class="c"><div class="ic"><svg viewBox="0 0 28 28"><rect x="3" y="5" width="22" height="15" rx="2.5" fill="#D97757"/><path d="M10 24h8M14 20v4" stroke="#D97757" stroke-width="2.4" stroke-linecap="round"/><path d="M8 11l3 2.5L8 16M13.5 16h5" stroke="#FAF9F5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+  <div><h2>Test your setup</h2><p>macOS, WSL, VS Code, JetBrains or anything unusual: tell us if it works.</p></div></div>
+ <div class="c"><div class="ic"><svg viewBox="0 0 28 28"><path d="M6 22l2-6L19 5l4 4-11 11z" fill="#D97757"/><path d="M5 25h18" stroke="#D97757" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+  <div><h2>Fix a word</h2><p>A confusing step in the README or a folder's notes? A one-line fix is welcome.</p></div></div>
+</div>
+</div><script src="fit.js"></script></body></html>

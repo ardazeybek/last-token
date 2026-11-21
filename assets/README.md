@@ -33,6 +33,7 @@ Needs a Chromium (Playwright cache or system) and network for Google Fonts. Keep
 - support-*.png — Clipio-style support cards: issues, discussions, mail (src/support-*.html + support.css)
 - warning.png, plain-words.png, quota-share.png, tools.png, never.png — the warning, the formula in plain words, the 7-day quota split, the tools comparison, the never/under-the-hood boxes (src/*.html)
 - contribute.png — three ways to help, links to CONTRIBUTING.md (src/contribute.html)
+- conduct.png, contrib-ways.png, contrib-flow.png, contrib-rules.png — CODE_OF_CONDUCT.md and CONTRIBUTING.md as pictures (src/*.html)
 - license.png — MIT, independence note, star request (src/license.html)
 - updates.png — self-update flow (src/updates.html)
 - faq.png — short FAQ answers (src/faq.html)

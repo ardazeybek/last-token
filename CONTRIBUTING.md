@@ -1,37 +1,22 @@
 # Contributing to Last Token
 
-Thanks for helping. You do not need to write code to contribute. These are all useful:
+<p align="center"><a href="https://github.com/ardazeybek/last-token/issues/new/choose"><img src="assets/contrib-ways.png" width="100%" alt="You don't need to write code to help. Most valuable: share your quota numbers after a week of use. Report a bug: what you did, what you expected, what happened. Test your setup: macOS, WSL, VS Code, JetBrains. Fix a word in the docs." /></a></p>
 
-- **Quota reports** — run Last Token for a week and share what the developer pane says (see *For tinkerers* in the README). Real numbers from other plans and models are the most valuable thing you can send.
-- **Bug reports** — what you did, what you expected and what happened.
-- **Testing** — macOS, WSL, VS Code, JetBrains and unusual setups are especially welcome.
-- **Documentation** — fix unclear steps in the README or in a folder's `README.md`.
+With a bug report, paste the output of:
 
-Bugs and ideas go to [GitHub Issues](https://github.com/ardazeybek/last-token/issues). When reporting a bug, include your operating system, how you run Claude Code (terminal, desktop app, IDE) and the output of `python3 ~/.claude/last-token/ctx.py doctor`.
+```bash
+python3 ~/.claude/last-token/ctx.py doctor
+```
 
-## Workflow
+<p align="center"><img src="assets/contrib-flow.png" width="100%" alt="From idea to merged in six steps: look through the issues first, open an issue for a bigger change, fork and create a branch, make your change, run the checks, open a pull request that says what changed and why." /></p>
 
-1. Look through the existing issues first.
-2. For a larger change, open an issue and describe your idea before you start.
-3. Fork the repository and create a branch, for example `fix/guard-on-windows`.
-4. Make your change.
-5. Run the checks below.
-6. Open a pull request that explains what changed and why.
-
-## Rules of the code
-
-- `system/ctx.py` stays **one file, standard library only**.
-- Hooks must never crash a session: on any error they exit with 0.
-- The goal is plan **quota**, not raw tokens. A change that saves tokens but adds cache writes is a regression (see [docs/RESEARCH.md](docs/RESEARCH.md)).
-- A change to the system is measured with the benchmark ([bench/README.md](bench/README.md)) and the round is added to [docs/BENCHMARK.md](docs/BENCHMARK.md).
-
-## Checks
+The checks (step 5):
 
 ```bash
 python3 -m unittest discover system/tests      # Python tests
 claude plugin test system/mod                  # mod tests (needs Claude Code)
 ```
 
-## Map
+<p align="center"><img src="assets/contrib-rules.png" width="100%" alt="Four rules every change keeps: system/ctx.py stays one file, standard library only. Hooks never crash, they exit 0 on any error. The goal is plan quota, not tokens: saving tokens while adding cache writes is a regression. Every system change is measured with the benchmark and logged as a round." /></p>
 
-[MAP.md](MAP.md) shows how the parts fit together; every folder has a `README.md` with one line per file.
+<p align="center"><sub><a href="docs/RESEARCH.md">Why quota, not tokens</a> · <a href="bench/README.md">Run the benchmark</a> · <a href="docs/BENCHMARK.md">All rounds</a> · <a href="MAP.md">How the parts fit</a></sub></p>

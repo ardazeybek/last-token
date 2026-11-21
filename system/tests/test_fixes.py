@@ -1,4 +1,4 @@
-"""Regression tests for the 2026-11-20 audit (docs/AUDIT-2026-11-20.md): each test is one finding. Run: python3 -m unittest discover system/tests"""
+"""Regression tests for the 2026-11-20 audit: each test is one finding. Run: python3 -m unittest discover system/tests"""
 import io
 import json
 import os

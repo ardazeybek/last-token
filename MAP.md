@@ -4,10 +4,10 @@
 - `system/` — the installable product: `ctx.py` (single stdlib script) + `skill/SKILL.md` + `mod/` (Claude Code mod, TypeScript).
 - `bench/` — reproducible benchmark: fixture generator, 32 steps, runner, scorer, probes.
 - `results/` — scored benchmark runs (`<round>-<cond>.json`), referenced by BENCHMARK.md.
-- `docs/` — RESEARCH (internals, quota formula), DESIGN (why), BENCHMARK (all rounds), ROADMAP (next levers), AUDIT.
+- `docs/` — RESEARCH (internals, quota formula), DESIGN (why), BENCHMARK (all rounds), ROADMAP (next levers).
 - `assets/` — README images (logo, banner, charts) rendered from `assets/src/*.html`; style in DESIGN.md.
 - `.github/` — CI (Python tests), issue and PR templates.
-- root — `install.sh`, `get.sh`, `install-last-token.md` (the file users drop into Claude Code; also the release asset behind the README button), README, INSTALL (steps Claude follows), MAP, DESIGN, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT, LICENSE.
+- root — `install.sh`, `get.sh`, `install-last-token.md` (the file users drop into Claude Code; also the release asset behind the README button), README, INSTALL (steps Claude follows), MAP, DESIGN, CONTRIBUTING, CODE_OF_CONDUCT, LICENSE.
 
 ## Main flow (installed project)
 1. `install.sh <project>` → `ctx.py init`: creates `.ctx/`, protocol block in CLAUDE.md,

@@ -5,7 +5,7 @@
 | `ctx.py` | the whole system (stdlib Python): install, agent commands (`rule`, `decide`, `note`, `recall`, `status`, `check`, `audit`, `savings`, `panel`, `tune`: per-model compaction window from your usage, `self-update`: pull + reinstall from GitHub, a background Claude session repairs a failed update, `mod`, `compact-summary`) the hooks (`hook-precompact`, `hook-guard`: read guard, `hook-session`: global-mode memory injection, daily retune, update check every 3 h) and `global on|off` |
 | `autoinstall.sh` | optional user `SessionStart` hook (copied to `~/.claude/last-token/`): installs into code projects under `~/PROJECTS/` (git repo or a project file), refreshes their `.ctx/ctx.py` copy and (global mode) `~/.claude/last-token/ctx.py`, skips projects with `.no-last-token`, logs to `~/.claude/last-token/autoinstall.log` |
 | `tests/test_ctx.py` | unit tests: digest content, task-list replay, Turkish decisions, savings, global mode (`python3 -m unittest discover system/tests`) |
-| `tests/test_fixes.py` | regression tests, one per finding of docs/AUDIT-2026-11-20.md |
+| `tests/test_fixes.py` | regression tests, one per finding of the 2026-11-20 audit |
 | `tests/test_cache.py` | prompt-cache report: re-write causes (gap, prefix, model), compactions after a cold gap |
 | `mod/` | optional Claude Code mod (0.8.0): no-LLM digest compaction, Explore → Haiku, plan-quota pane; see `mod/README.md`. Installed per user with `ctx.py mod install` |
 | `skill/SKILL.md` | optional skill with the detailed how-to (recall, notes, delegation); copied to `.claude/skills/last-token/` |

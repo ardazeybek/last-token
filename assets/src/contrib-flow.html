@@ -1,0 +1,23 @@
+<!doctype html>
+<!-- contrib-flow.html — source of assets/contrib-flow.png: the six-step pull request workflow -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+.flow{display:grid;grid-template-columns:repeat(6,1fr);margin-top:44px;position:relative}
+.flow:before{content:"";position:absolute;left:28px;right:calc(100%/6 - 28px);top:27px;height:2px;background:var(--brand-soft)}
+.s{position:relative;padding-right:18px}
+.n{width:56px;height:56px;border-radius:50%;background:var(--paper);border:2px solid var(--brand);color:var(--brand);display:grid;place-items:center;font:600 24px/1 var(--serif);position:relative}
+.s.last .n{background:var(--brand);color:var(--paper)}
+.s h2{font-family:var(--serif);font-size:22px;font-weight:600;line-height:1.2;margin-top:20px}
+.s p{font-size:16px;line-height:1.45;color:var(--ink-2);margin-top:6px}
+</style></head><body><div class="panel" id="cv">
+<div class="kicker">Workflow</div>
+<h1 style="margin-top:14px">From idea to merged in six steps</h1>
+<div class="flow">
+ <div class="s"><div class="n">1</div><h2>Look first</h2><p>Someone may already be on it in Issues.</p></div>
+ <div class="s"><div class="n">2</div><h2>Talk big ideas</h2><p>Bigger change? Open an issue before you start.</p></div>
+ <div class="s"><div class="n">3</div><h2>Fork &amp; branch</h2><p>For example <span class="mono" style="font-size:14px">fix/guard-on-windows</span></p></div>
+ <div class="s"><div class="n">4</div><h2>Make it</h2><p>Small and focused beats big and clever.</p></div>
+ <div class="s"><div class="n">5</div><h2>Run the checks</h2><p>The two commands below this picture.</p></div>
+ <div class="s last"><div class="n">6</div><h2>Open the PR</h2><p>Say what changed and why.</p></div>
+</div>
+</div><script src="fit.js"></script></body></html>

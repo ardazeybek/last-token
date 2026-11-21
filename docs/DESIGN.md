@@ -154,7 +154,7 @@ there is no CLAUDE.md to import it, so `SessionStart` injects the same core once
 after each compaction. The mod uses the same lookup: pane + digest only where a store or `.ctx` applies.
 
 ### 2.11 Quality first (0.7.0, audit 2026-11-20)
-A zirve audit (docs/AUDIT-2026-11-20.md) found the system saving tokens at the cost of answers:
+A zirve audit found the system saving tokens at the cost of answers:
 - **No low effort by default.** autoinstall had written `effortLevel: low` into 11 of 12 projects;
   the bench gain was Haiku on a simple task. Removed; `init` deletes the old value.
 - **Later trigger.** Project `autoCompactWindow 200000` + pct 54-58 % overrode the user's 400K for

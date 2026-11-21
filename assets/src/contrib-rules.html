@@ -1,0 +1,21 @@
+<!doctype html>
+<!-- contrib-rules.html — source of assets/contrib-rules.png: the four rules every code change follows -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:38px}
+.c{border-top:3px solid var(--ink);padding-top:22px}
+.c.hot{border-color:var(--brand)}
+.big{font:600 40px/1 var(--serif);color:var(--ink)}
+.c.hot .big{color:var(--brand)}
+.c h2{font-size:19px;font-weight:600;margin-top:14px;line-height:1.3}
+.c p{font-size:16px;line-height:1.5;color:var(--ink-2);margin-top:8px}
+</style></head><body><div class="panel" id="cv">
+<div class="kicker">Rules of the code</div>
+<h1 style="margin-top:14px">Four rules every change keeps</h1>
+<div class="grid">
+ <div class="c"><div class="big">1 file</div><h2>Standard library only</h2><p><span class="mono" style="font-size:14px">system/ctx.py</span> stays one file. Nothing to pip install, ever.</p></div>
+ <div class="c"><div class="big">exit 0</div><h2>Hooks never crash</h2><p>On any error a hook quietly steps aside. Your session always keeps running.</p></div>
+ <div class="c hot"><div class="big">quota</div><h2>Not tokens</h2><p>Saves tokens but adds cache writes? That is a regression, not a win.</p></div>
+ <div class="c"><div class="big">measured</div><h2>Benchmark or it didn't happen</h2><p>Every system change is run through the benchmark and logged as a round.</p></div>
+</div>
+</div><script src="fit.js"></script></body></html>
