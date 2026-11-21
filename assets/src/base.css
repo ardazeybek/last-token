@@ -1,0 +1,39 @@
+/* base.css — shared design tokens and layout for every README image (see DESIGN.md) */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=block');
+
+/* Tokens */
+:root {
+  --paper: #FAF7F2;      /* opaque panel: reads on GitHub light and dark */
+  --edge: #E6DFD3;       /* hairline border, defines the panel on white */
+  --ink: #1C1B18;
+  --ink-2: #57534B;
+  --ink-3: #736D64;
+  --rule: #E3DCCF;
+  --grid: #ECE6DB;
+  --brand: #2356C8;      /* Last Token */
+  --brand-soft: #DCE5F7;
+  --cost: #C2452D;       /* things that cost more */
+  --cost-soft: #F4DDD6;
+  --base: #A8A196;       /* plain Claude Code, the neutral baseline */
+  --term: #17181B;       /* terminal surface */
+  --serif: 'Source Serif 4', Georgia, serif;
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --pad: 64px;
+}
+
+/* Canvas: fixed 1280 px wide, transparent outside the rounded panel */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: transparent; }
+body { width: 1278px; padding: 1px; box-sizing: content-box; font-family: var(--sans); color: var(--ink);
+  -webkit-font-smoothing: antialiased; font-feature-settings: "tnum" 1, "lnum" 1; }
+.panel { background: var(--paper); border: 1px solid var(--edge); border-radius: 18px;
+  padding: 56px var(--pad) 48px; overflow: hidden; position: relative; }
+
+/* Type scale: 40 / 22 / 17 / 15 / 13 */
+h1 { font-family: var(--serif); font-weight: 600; font-size: 46px; line-height: 1.12;
+  letter-spacing: -0.01em; font-optical-sizing: auto; }
+.lede { font-size: 20px; line-height: 1.5; color: var(--ink-2); margin-top: 10px; max-width: 64ch; }
+.note { font-size: 16px; line-height: 1.5; color: var(--ink-3); }
+.mono { font-family: var(--mono); }
+svg text { font-family: var(--sans); }

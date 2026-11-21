@@ -1,7 +1,7 @@
 # results/ — scored benchmark runs
 
 One JSON per run, written by `bench/score.py <run> --out results/<round>-<cond>.json`.
-`python3 bench/score.py --table results/*.json` prints the table used in BENCHMARK.md.
+`python3 bench/score.py --table results/*.json` prints the table used in docs/BENCHMARK.md.
 
 | file | run |
 |---|---|

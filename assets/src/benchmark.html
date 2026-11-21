@@ -1,0 +1,66 @@
+<!doctype html>
+<!-- benchmark.html — source of assets/benchmark.png: the 32-step benchmark as one labeled bar table -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+  .tbl { margin-top: 40px; display: grid; grid-template-columns: 260px 1fr 92px 92px 112px; column-gap: 0; }
+  .hd { font-size: 16px; color: var(--ink-3); padding-bottom: 12px; border-bottom: 1px solid var(--rule); }
+  .hd.r, .c.r { text-align: right; }
+  .c { height: 76px; display: flex; align-items: center; font-size: 20px; border-bottom: 1px solid var(--rule); }
+  .c.r { justify-content: flex-end; }
+  .name { font-weight: 400; }
+  .me .name { font-weight: 600; }
+  .track { position: relative; height: 100%; width: 100%; }
+  .grid { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--grid); }
+  .bar { position: absolute; left: 0; top: 50%; height: 26px; margin-top: -13px; border-radius: 0 4px 4px 0; }
+  .val { position: absolute; top: 50%; transform: translateY(-50%); white-space: nowrap; font-size: 20px; padding-left: 12px; }
+  .val b { font-weight: 600; }
+  .val .d { font-size: 17px; margin-left: 8px; color: var(--ink-2); }
+  .axis { position: relative; height: 28px; grid-column: 2; }
+  .axis span { white-space: nowrap; position: absolute; top: 8px; transform: translateX(-50%); font-size: 16px; color: var(--ink-3); }
+  .axis span:first-child { transform: none; }
+  .axis span:last-child { transform: translateX(-100%); }
+  .track { margin-right: 8px; }
+  .foot { margin-top: 28px; display: flex; justify-content: space-between; }
+  .ok { color: var(--ink); }
+  .ok::before { content: ""; display: inline-block; width: 12px; height: 7px; border-left: 2px solid var(--ink-2);
+    border-bottom: 2px solid var(--ink-2); transform: rotate(-45deg) translateY(-3px); margin-right: 8px; }
+</style></head>
+<body><div class="panel" id="cv">
+  <h1>Last Token does the same work on 28 % less plan quota</h1>
+  <p class="lede">One 32-step coding task with 10 rules to follow, 5 recall probes and a test suite, run three ways.
+    Quota is the share of the Pro 5-hour window the whole task used.</p>
+
+  <div class="tbl" id="t">
+    <div class="hd">Setup</div><div class="hd">Plan quota used</div>
+    <div class="hd r">Rules</div><div class="hd r">Recall</div><div class="hd r">Tests</div>
+  </div>
+  <div class="foot">
+    <p class="note">Shorter bar is better. Every run uses the same model, effort and task.</p>
+    <p class="note">Raw runs and scoring: results/ and bench/</p>
+  </div>
+</div>
+<script>
+  // Data: exactly the published benchmark figures
+  const rows = [
+    { name: 'Last Token', q: 3.60, d: '−28 %', rules: '98 %', recall: '100 %', color: 'var(--brand)', me: true },
+    { name: 'Plain Claude Code', q: 4.99, d: '', rules: '98 %', recall: '100 %', color: 'var(--base)' },
+    { name: 'LLM-summary compaction', q: 7.84, d: '+57 %', rules: '97 %', recall: '100 %', color: 'var(--cost)' },
+  ];
+  const MAX = 10, t = document.getElementById('t');
+  const pct = v => (v / MAX * 100) + '%';
+  const grid = [0, 2, 4, 6, 8, 10].map(v => `<i class="grid" style="left:${pct(v)}"></i>`).join('');
+  // Rows: name, bar with direct label, three score columns
+  for (const r of rows) {
+    t.insertAdjacentHTML('beforeend', `
+      <div class="c ${r.me ? 'me' : ''}"><span class="name">${r.name}</span></div>
+      <div class="c"><div class="track">${grid}
+        <div class="bar" style="width:${pct(r.q)};background:${r.color}"></div>
+        <div class="val" style="left:${pct(r.q)}"><b>${r.q.toFixed(2)} %</b>${r.d ? `<span class="d">${r.d}</span>` : ''}</div>
+      </div></div>
+      <div class="c r">${r.rules}</div><div class="c r">${r.recall}</div><div class="c r"><span class="ok">passed</span></div>`);
+  }
+  // Axis ticks under the bar column
+  t.insertAdjacentHTML('beforeend', `<div></div><div class="axis">${[0,2,4,6,8,10].map(v => `<span style="left:${pct(v)}">${v}${v===10?' %':''}</span>`).join('')}</div>`);
+</script>
+<script src="fit.js"></script>
+</body></html>

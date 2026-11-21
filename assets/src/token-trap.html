@@ -1,0 +1,53 @@
+<!doctype html>
+<!-- token-trap.html — source of assets/token-trap.png: indexed slopegraph, tokens fall while cost rises -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+  .wrap { margin-top: 32px; display: grid; grid-template-columns: 760px 1fr; gap: 48px; align-items: start; }
+  svg text { font-size: 18px; fill: var(--ink-2); }
+  svg .v { font-size: 20px; font-weight: 600; fill: var(--ink); }
+  svg .ax { font-size: 16px; fill: var(--ink-3); }
+  svg .col { font-size: 18px; font-weight: 500; fill: var(--ink); }
+  .why { padding-top: 34px; font-size: 20px; line-height: 1.55; color: var(--ink-2); }
+  .why h2 { font-family: var(--serif); font-weight: 600; font-size: 26px; color: var(--ink); margin-bottom: 10px; }
+  .why p + p { margin-top: 14px; }
+  .why b { color: var(--ink); font-weight: 600; }
+  .note { margin-top: 20px; }
+</style></head>
+<body><div class="panel" id="cv">
+  <h1>Cutting tokens raised the bill by 69 %</h1>
+  <p class="lede" style="max-width:none">Our own early version cut the context hard with many early compactions.
+    Same 32-step task on Opus, compared with plain Claude Code.</p>
+  <div class="wrap">
+    <svg width="760" height="400" viewBox="0 0 760 400" id="s"></svg>
+    <div class="why">
+      <h2>Why it backfires</h2>
+      <p>Every cut changes the start of the context, so the prompt cache has to be <b>written again</b>.</p>
+      <p>A cache write costs about as much as <b>30 cache reads</b>. The tokens you save are cheap. The ones you cause are not.</p>
+    </div>
+  </div>
+  <p class="note">Index: plain Claude Code = 100. Tokens 12.6M → 8.3M (−34 %). Cost $8.72 → $14.71 (+69 %).</p>
+</div>
+<script>
+  // Scale: index 40–180 mapped to the plot; plain Claude Code = 100
+  const s = document.getElementById('s'), X0 = 190, X1 = 570, T = 24, B = 340;
+  const y = v => B - ((v - 40) / 140) * (B - T);
+  let h = '';
+  // Gridlines with index labels
+  for (const v of [50, 100, 150]) h += `<line x1="${X0 + 10}" x2="${X1 + 20}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/>${v === 100 ? '' : `<text class="ax" x="${X0}" y="${y(v) + 6}" text-anchor="end">${v}</text>`}`;
+    // Column heads
+  h += `<text class="col" x="${X0}" y="${B + 30}" text-anchor="middle">Plain Claude Code</text>`;
+  h += `<text class="col" x="${X1}" y="${B + 30}" text-anchor="middle">Token-cutting version</text>`;
+  // Two slopes from the shared start point
+  const tok = 8.3 / 12.6 * 100, cost = 14.71 / 8.72 * 100;
+  h += `<line x1="${X0}" y1="${y(100)}" x2="${X1}" y2="${y(tok)}" stroke="var(--base)" stroke-width="3" stroke-linecap="round"/>`;
+  h += `<line x1="${X0}" y1="${y(100)}" x2="${X1}" y2="${y(cost)}" stroke="var(--cost)" stroke-width="3" stroke-linecap="round"/>`;
+  for (const [yy, c] of [[y(100), 'var(--ink)'], [y(tok), 'var(--base)'], [y(cost), 'var(--cost)']])
+    h += `<circle cx="${yy === y(100) ? X0 : X1}" cy="${yy}" r="6" fill="${c}" stroke="var(--paper)" stroke-width="2"/>`;
+  // Direct labels: start values, end values with change
+  h += `<text class="v" x="${X0 - 16}" y="${y(100) - 32}" text-anchor="end">12.6M tokens</text><text class="v" x="${X0 - 16}" y="${y(100) - 8}" text-anchor="end">$8.72</text><text class="ax" x="${X0 - 16}" y="${y(100) + 26}" text-anchor="end">index 100</text>`;
+  h += `<text class="v" x="${X1 + 18}" y="${y(cost) + 1}">$14.71</text><text x="${X1 + 18}" y="${y(cost) + 22}">cost +69 %</text>`;
+  h += `<text class="v" x="${X1 + 18}" y="${y(tok) + 1}">8.3M</text><text x="${X1 + 18}" y="${y(tok) + 22}">tokens −34 %</text>`;
+  s.innerHTML = h;
+</script>
+<script src="fit.js"></script>
+</body></html>

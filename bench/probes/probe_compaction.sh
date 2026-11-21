@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# probe_compaction.sh — reproduce the Claude Code behaviours context-economy relies on:
+# probe_compaction.sh — reproduce the Claude Code behaviours last-token relies on:
 #  1) CLAUDE_AUTOCOMPACT_PCT_OVERRIDE set via settings.json "env" moves the auto-compaction trigger
 #  2) PreCompact hook stdout is used as summarisation instructions
 #  3) CLAUDE.md @imports are re-read from disk after compaction

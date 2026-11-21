@@ -67,3 +67,83 @@ in a 100-turn search eval.
    (idea shared with context-mode, but without a sandbox or per-prompt injection).
 5. **No dependencies:** one Python 3 stdlib script + markdown files. No server, no MCP,
    no vector DB, no extra model calls.
+
+## 4. Phase 2 candidates: the author's own token-saving stack (2026-11-17)
+
+Each is a candidate benchmark condition; only what wins a measured round moves into the product.
+
+| Candidate | What it does | Origin / licence | How it could join |
+|---|---|---|---|
+| [rtk](https://github.com/rtk-ai/rtk) 1.2.0 | `PreToolUse(Bash)` hook rewrites commands through a Rust proxy that condenses output (git, ls, tests, logs) | rtk-ai, **Apache-2.0** (compatible with MIT; keep NOTICE/attribution if code is copied) | Measured as condition e (r6): −1.2 % tokens (noise), late rules 96 % → not recommended by this benchmark |
+| Global "token saving" rules (`~/.claude/CLAUDE.md`) | grep before reading big files, `| tail -n 40`, Explore subagent for broad search, batch independent commands, no full re-reads | author's own (can be MIT) | grep/slices/subagent already in protocol + guard; "batch + no re-read" as rule 6 lowered R6 compliance (r6) → dropped |
+| `harita` skill | keeps `MAP.md` (≤150 lines) + per-folder README, `@MAP.md` in CLAUDE.md so a new chat needs only a few K tokens | author's own | Condition `g`: matters for new-chat steps (recall), fixture needs a MAP |
+| `devir` skill | writes `DEVIR.md` handoff + short paste message for a new chat | author's own | Overlaps with PreCompact archive + INDEX; measure on the new-chat steps |
+| `kontrol`, animation and design skills, impeccable, frontend-design, pyright-lsp | quality/design tools, not token savers | various | Out of scope (but each adds to the fixed base: see thrash pitfall) |
+
+Fixed base matters: in the desktop app this author's setup costs ~70K tokens per request before
+any conversation (skill listing ~12K, deferred tools, MCP instructions, agent listing). Trimming
+that base is a separate, unmeasured lever.
+
+## 5. Competitor study and Claude Code internals (2026-11-18, Claude Code 2.1.322)
+
+Nine repositories were cloned and read (code, not only READMEs; none was run):
+
+| Project | Licence | Mechanism (from the code) | Their own numbers | Taken? |
+|---|---|---|---|---|
+| [context-mode](https://github.com/mksglu/context-mode) | Elastic-2.0 | PreToolUse denies Read > 16 KB; PostToolUse `updatedToolOutput` swaps outputs > 4 KB for ≤96 B excerpts + FTS search; ≤2 KB state after compaction | sessions −19.6 % median on large tasks, +5.7 % on small | idea only (licence); our r6/r7 clip already showed output cuts cost rule compliance |
+| [claude-code-token-saver](https://github.com/ww-w-ai/claude-code-token-saver) | Apache-2.0 | background `--fork-session` pre-writes a summary, installs it through the mods `session.compact` hook; `includeGitInstructions:false` | one anecdote ($326 → $180/day) | **yes: the mods API route** (our compaction is deterministic, no fork call) |
+| [claude-mem](https://github.com/thedotmack/claude-mem) | Apache-2.0 | observer LLM, SQLite/Chroma; auto-clear mod at 33 % (save state, `/clear`, continue) | read gate −6 % … +20 % | idea: compaction without a summarizer |
+| [claude-token-optimizer](https://github.com/nadimtuhin/claude-token-optimizer) | MIT | prune CLAUDE.md; hook templates read `CLAUDE_TOOL_NAME` (probably inert) | startup 11K → 800 (CLAUDE.md only) | no |
+| [claude-token-efficient](https://github.com/drona23/claude-token-efficient) | MIT | 7-line terse CLAUDE.md | output −1 % (Haiku) … −18 % (Sonnet) | no (output ≈ 3 % of tokens) |
+| [cc-plugin](https://github.com/TokenRollAI/cc-plugin) | MIT (lockfile) | doc IDs instead of bodies after compaction; prompt-budget CI | none | idea: per-hook token budget |
+| [Save-The-Token](https://github.com/ch040602/Save-The-Token) | MIT | MCP schema cost estimate + allowlists | static estimate −69 % | idea: shrink tool schemas |
+| [caveman](https://github.com/JuliusBrussee/caveman) | Apache-2.0 | terse-speak skill, input proxy, `ENABLE_TOOL_SEARCH` | own doc: −44 % output = +0.06 % total cost | idea: defer tools behind ToolSearch |
+| [token-reducer](https://github.com/madhan230205/token-reducer) | MIT | BM25+vector retrieval skill | per query only | no |
+
+Nobody measured whole sessions against a no-tool baseline with quality checks; the only
+whole-session numbers (context-mode, caveman) are mixed.
+
+**Claude Code internals found by reading the 2.1.322 binary and the mods type file:**
+
+- The fixed base is the biggest cost: in the bench it is 36 % of all tokens; in the author's
+  CLI setup the first request is 39K tokens, of which the Artifact tool definition alone is ~9.6K.
+- Mods hooks (official API) can change it: `tool.describe` (description text, `isDeferred` puts a
+  tool behind ToolSearch — works only when ToolSearch is offered), `prompt.compose` (system
+  prompt sections by id: `lean_body`, `heron_brook`, `session_guidance`, …), `prompt.attachment`
+  (skill/agent listings, account context), `session.compact` (answer the compaction yourself).
+- Measured base with the mod: bench 11.2K → 4.3K (all levers) / 6.8K (shipped levers); the
+  author's CLI setup 39.1K → 13.3K.
+- `clear_tool_uses_20250919` context editing exists in the binary but only as a server-gated
+  idle feature; `CLAUDE_CODE_SIMPLE_SYSTEM_PROMPT` is already the default for Haiku in `-p`.
+- Hook-built compaction pitfall: messages returned *with* their engine handle stay chained to the
+  old history and come back on `--resume`. Return only new messages.
+
+## Plan quota formula (measured 2026-11-21, Pro plan, Haiku 5.5 low effort)
+Method: `bench/quota_probe.py` spends one token type; `bench/usage_window.py` sums EVERY session's
+usage in the window (the chatting session included); the plan's 5-hour % is read before/after.
+| probe | Haiku tokens (main type) | 5-hour quota |
+|---|---|---|
+| cache write | 4.61M cw | +21 pts |
+| cache read  | 3.83M cr (+0.51M cw) | +3 pts |
+| output      | 0.44M out (+0.42M cw, + ~2.8M Opus cache read of the chat) | +5 pts |
+Fit (points per 1M Haiku tokens, ±1 pt rounding): cache write ≈ 4.6, output ≈ 3–7, cache read ≈ 0.1–0.2.
+So 100 % of the 5-hour window ≈ 22M Haiku cache-write tokens. **Quota is not raw tokens and not API cost:**
+a cache write weighs about as much as an output token and ~30× a cache read (API price: 10×).
+Consequences for last-token: saving cache *reads* is almost worthless; what costs is cache *writes*
+(every compaction, every cache miss: idle > cache TTL, a changed system prompt/tool list) and output.
+Re-scored with this weight, bench r17 Opus k (1.31M cw) cost MORE quota than a (0.35M cw).
+
+## Where the quota really goes, and the cache (measured 2026-11-21, 7 days of the author's transcripts)
+Quota-weighted (Haiku weights × API-price factor): main cache read 42 %, main cache write 26 %, subagents 24 %,
+output 8 %. Main cache write split: new content written once 59 %, re-write after a gap > TTL 18 %,
+after a compaction 12 %, session start 9 %, changed prefix 2 %.
+- Subscriptions get a **1-hour** cache TTL (`ephemeral_1h_input_tokens` on every call); `-p` too.
+- Sessions share ~38–47K of cached prefix (system prompt + tools) when another session ran within the hour;
+  the rest of the desktop base (~25–30K: skills, CLAUDE.md, environment) is written per session.
+- Claude Code has a built-in `idleCompaction` (setting, default on): a timer at 90 % of the TTL (54 min)
+  compacts while the cache is still warm — only when the conversation is ≥100K over its load size
+  (`CLAUDE_CODE_IDLE_COMPACT_MIN_TOKENS` cannot go below 100K), never in unattended (`-p`) runs.
+- Mods: `$.session.compact()` is refused inside `prompt.submit` and in headless/SDK sessions; from a timer
+  it skips all of the calling plugin's hooks (so our digest hook would not run). `http.fetch` sees every
+  engine model request and may rewrite its JSON body — the lever used for cold-cache pruning.
+- The batching rule ("batch independent calls") was tested in round 8 and rejected: no reliable saving.

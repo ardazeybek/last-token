@@ -1,0 +1,75 @@
+<!doctype html>
+<!-- how-it-works.html — source of assets/how-it-works.png: one session's context size with the six levers marked, plus the lever list -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+  svg { display: block; margin-top: 28px; }
+  svg text { font-size: 17px; fill: var(--ink-2); }
+  svg .k { font-weight: 600; fill: var(--brand); }
+  svg .t { font-weight: 600; fill: var(--ink); }
+  svg .ax { font-size: 16px; fill: var(--ink-3); }
+  .list { margin-top: 30px; display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 40px; }
+  .it { padding: 18px 0 20px; border-top: 1px solid var(--rule); display: grid; grid-template-columns: 34px 1fr; }
+  .it .k { font-size: 18px; font-weight: 600; color: var(--brand); padding-top: 1px; }
+  .it h3 { font-size: 20px; font-weight: 600; }
+  .it p { margin-top: 4px; font-size: 18px; line-height: 1.5; color: var(--ink-2); }
+  .foot { margin-top: 10px; padding-top: 18px; border-top: 1px solid var(--rule); font-size: 18px; color: var(--ink-2); }
+  .foot b { color: var(--ink); font-weight: 600; }
+</style></head>
+<body><div class="panel" id="cv">
+  <h1>Where Last Token steps into a session</h1>
+  <p class="lede">One Claude Code session with Last Token. The line is the size of the context Claude carries from call to call.</p>
+
+  <svg width="1152" height="320" viewBox="0 0 1152 320" id="s"></svg>
+
+  <div class="list" id="l"></div>
+  <p class="foot"><b>One Python file, standard library only.</b> No server, no account, no telemetry. It runs as plain Claude Code hooks and a mod.</p>
+</div>
+<script>
+  // Geometry of the session diagram
+  const s = document.getElementById('s');
+  const TH = 64, MEM = 238, AX = 262;           // compaction line, top of memory band, time axis
+  let h = '';
+  // Gap: a break long enough for the cache to expire
+  h += `<rect x="560" y="76" width="130" height="${AX - 76}" fill="#F1ECE3"/>`;
+  h += `<text class="ax" x="625" y="186" text-anchor="middle">break,</text><text class="ax" x="625" y="203" text-anchor="middle">cache expired</text>`;
+  // 03 memory band along the bottom
+  h += `<rect x="0" y="${MEM}" width="1100" height="${AX - MEM}" fill="var(--brand-soft)"/>`;
+  h += `<text x="12" y="${MEM + 17}"><tspan class="k">03</tspan><tspan dx="8" fill="var(--ink)">memory on disk, reloaded after every compaction</tspan></text>`;
+  // 01 compaction line
+  h += `<line x1="0" x2="1100" y1="${TH}" y2="${TH}" stroke="var(--brand)" stroke-dasharray="5 5" stroke-width="1.5"/>`;
+  h += `<text x="0" y="${TH - 14}"><tspan class="k">01</tspan><tspan dx="8" fill="var(--ink)">compaction point, tuned per model from your own usage</tspan></text>`;
+  // Context size line (sawtooth)
+  const pts = [[0, 226], [140, 160], [280, 112], [330, TH], [330, 206], [460, 166], [472, 150], [484, 162], [560, 136], [690, 136], [690, 196], [860, 140], [1000, TH], [1000, 206], [1100, 176]];
+  h += `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/>`;
+  // 02 digest at the first compaction
+  h += `<circle cx="330" cy="${TH}" r="5" fill="var(--brand)"/><circle cx="330" cy="206" r="5" fill="var(--ink)"/>`;
+  h += `<text x="346" y="226"><tspan class="k">02</tspan><tspan dx="8" fill="var(--ink)">digest, no summarizer call</tspan></text>`;
+  // 06 guard: the whole-file read that did not happen
+  h += `<line x1="472" y1="150" x2="472" y2="92" stroke="var(--cost)" stroke-width="2" stroke-dasharray="3 4"/>`;
+  h += `<path d="M464 142 l16 0" stroke="var(--cost)" stroke-width="2.5"/>`;
+  h += `<text x="464" y="86"><tspan class="k" style="fill:var(--cost)">06</tspan><tspan dx="8" fill="var(--ink)">whole-file read stopped</tspan></text>`;
+  // 04 cold-cache pruning after the break
+  h += `<circle cx="690" cy="196" r="5" fill="var(--ink)"/>`;
+  h += `<text x="704" y="218"><tspan class="k">04</tspan><tspan dx="8" fill="var(--ink)">old outputs become stubs</tspan></text>`;
+  // 05 look-up subagent on Haiku, a side lane below the axis
+  h += `<circle cx="900" cy="118" r="4" fill="var(--ink)"/><path d="M900 118 V280 q0 12 12 12" fill="none" stroke="var(--ink-3)" stroke-width="1.2"/>`;
+  h += `<line x1="912" y1="292" x2="990" y2="292" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round"/>`;
+  h += `<text x="888" y="297" text-anchor="end"><tspan class="k">05</tspan><tspan dx="8" fill="var(--ink)">look-up subagent on Haiku</tspan></text>`;
+  // Time axis
+  h += `<line x1="0" x2="1100" y1="${AX}" y2="${AX}" stroke="var(--ink-3)"/><text class="ax" x="1110" y="${AX + 4}">time</text>`;
+  h += `<text class="ax" x="1100" y="${TH - 14}" text-anchor="end">context size</text>`;
+  s.innerHTML = h;
+
+  // Lever list, keyed to the numbers in the diagram
+  const L = [
+    ['Compaction at the right size', 'Set per model from your own usage. Tuned again every day.'],
+    ['No-LLM compaction', 'A deterministic digest replaces the paid summarizer call.'],
+    ['Memory that survives', 'Rules, decisions and notes live on disk and come back after every compaction.'],
+    ['Cold-cache pruning', 'After a break, when the cache expired anyway, old big tool outputs become one-line stubs.'],
+    ['Cheap look-ups', 'Read-only subagents run on Haiku, about 5× cheaper.'],
+    ['Big-file guard', 'Whole reads of huge files are stopped; Claude reads only the part it needs.'],
+  ];
+  document.getElementById('l').innerHTML = L.map(([t, d], i) => `<div class="it"><span class="k">0${i + 1}</span><div><h3>${t}</h3><p>${d}</p></div></div>`).join('');
+</script>
+<script src="fit.js"></script>
+</body></html>

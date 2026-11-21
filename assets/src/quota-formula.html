@@ -1,0 +1,63 @@
+<!doctype html>
+<!-- quota-formula.html — source of assets/quota-formula.png: quota cost per 1M tokens by token type + the 1 = 1 = 30 equivalence -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+  .chart { margin-top: 40px; display: grid; grid-template-columns: 270px 1fr; }
+  .lab { height: 72px; display: flex; flex-direction: column; justify-content: center; font-size: 20px; }
+  .lab small { font-size: 16px; color: var(--ink-3); margin-top: 2px; }
+  .row { position: relative; height: 72px; }
+  .grid { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--grid); }
+  .bar { position: absolute; left: 0; top: 23px; height: 26px; border-radius: 0 4px 4px 0; }
+  .range { position: absolute; top: 23px; height: 26px; border-radius: 0 4px 4px 0;
+    background: repeating-linear-gradient(135deg, var(--cost-soft) 0 5px, #E9BDB1 5px 7px); }
+  .val { position: absolute; top: 36px; transform: translateY(-50%); padding-left: 12px; font-size: 20px; white-space: nowrap; }
+  .val b { font-weight: 600; }
+  .val span { color: var(--ink-2); font-size: 18px; margin-left: 10px; }
+  .axis { position: relative; height: 30px; grid-column: 2; }
+  .axis span { position: absolute; top: 8px; transform: translateX(-50%); font-size: 16px; color: var(--ink-3); white-space: nowrap; }
+  .axis span:first-child { transform: none; }
+
+  /* Equivalence strip: equal areas = equal quota */
+  .eq { margin-top: 36px; padding-top: 32px; border-top: 1px solid var(--rule); display: flex; align-items: flex-end; gap: 28px; }
+  .unit { display: flex; flex-direction: column; align-items: center; gap: 12px; font-size: 18px; color: var(--ink-2); }
+  .unit b { color: var(--ink); font-weight: 600; }
+  .sq { width: 66px; height: 66px; border-radius: 3px; }
+  .dots { display: grid; grid-template-columns: repeat(6, 10px); gap: 1.2px; width: 66px; }
+  .dots i { width: 10px; height: 10.6px; background: var(--base); border-radius: 1.5px; }
+  .op { font-family: var(--serif); font-size: 34px; color: var(--ink-3); padding-bottom: 40px; }
+  .eqtext { margin-left: 32px; padding-bottom: 32px; max-width: 470px; font-size: 20px; line-height: 1.5; color: var(--ink-2); }
+  .eqtext b { color: var(--ink); font-weight: 600; }
+</style></head>
+<body><div class="panel" id="cv">
+  <h1>A cache write costs 30 times more quota than a cache read</h1>
+  <p class="lede">How much of the Pro 5-hour window one million tokens use up, measured for each kind of token.</p>
+
+  <div class="chart" id="c"></div>
+
+  <div class="eq">
+    <div class="unit"><div class="sq" style="background:var(--cost)"></div><span><b>1</b> cache write</span></div>
+    <div class="op">≈</div>
+    <div class="unit"><div class="sq" style="background:#D98A73"></div><span><b>1</b> output token</span></div>
+    <div class="op">≈</div>
+    <div class="unit"><div class="dots" id="dots"></div><span><b>30</b> cache reads</span></div>
+    <p class="eqtext">Equal areas use equal quota. <b>Most token savers aim at the cheap tokens</b>: they shrink
+      what is read from the cache and pay for it in cache writes.</p>
+  </div>
+</div>
+<script>
+  // Data: points of the 5-hour window per 1M tokens (output is a measured range)
+  const MAX = 8, pct = v => (v / MAX * 100) + '%', c = document.getElementById('c');
+  const grid = [0, 2, 4, 6, 8].map(v => `<i class="grid" style="left:${pct(v)}"></i>`).join('');
+  const rows = [
+    { name: 'Cache write', sub: 'written into the prompt cache', html: `<div class="bar" style="width:${pct(4.6)};background:var(--cost)"></div><div class="val" style="left:${pct(4.6)}"><b>4.6</b></div>` },
+    { name: 'Output', sub: 'what Claude writes back', html: `<div class="bar" style="width:${pct(3)};background:#D98A73"></div><div class="range" style="left:${pct(3)};width:calc(${pct(4)})"></div><div class="val" style="left:${pct(7)}"><b>3–7</b></div>` },
+    { name: 'Cache read', sub: 'context re-read from the cache', html: `<div class="bar" style="width:${pct(0.15)};background:var(--base);min-width:4px"></div><div class="val" style="left:${pct(0.15)}"><b>0.15</b><span>about 30× less than a write</span></div>` },
+  ];
+  // Rows and axis
+  for (const r of rows) c.insertAdjacentHTML('beforeend', `<div class="lab">${r.name}<small>${r.sub}</small></div><div class="row">${grid}${r.html}</div>`);
+  c.insertAdjacentHTML('beforeend', `<div class="axis">${[0,2,4,6,8].map(v => `<span style="left:${pct(v)}">${v}</span>`).join('')}<span style="left:100%;transform:translateX(-100%);top:30px">points of the 5-hour window per 1M tokens</span></div>`);
+  // 30 cells, each 1/30 of the write square's area
+  document.getElementById('dots').innerHTML = '<i></i>'.repeat(30);
+</script>
+<script src="fit.js"></script>
+</body></html>

@@ -1,9 +1,9 @@
 ---
-name: context-economy
+name: last-token
 description: Recall archived project details, write subtask notes, or check context/core size. Use when you need an earlier decision, finding or value that is no longer visible in context, when a subtask is finished, or when the user asks about context usage.
 ---
 
-# Context economy — details
+# Last Token — details
 
 The always-on part of the protocol is the block in `CLAUDE.md`. This skill holds the how-to.
 
@@ -32,6 +32,14 @@ Delegate to a subagent (Task tool, `subagent_type: Explore`) when a question nee
 files, more than ~400 lines, or long logs/test output. Ask for at most 15 lines with
 `file:line` references. Whole-file reads of big files are blocked by the guard hook; use
 `grep -n` + `Read offset/limit` instead.
+
+## Clipped command output (only if CTX_CLIP=on)
+Long Bash output is then saved whole to `.ctx/out/<time>.log`; you see the first 25 lines, the
+error/warn lines from the middle and the last 35. Need more? `grep -n` the saved log — do not re-run.
+
+## Fixed base
+`python3 .ctx/ctx.py audit` — what every request carries before the conversation (system prompt,
+tool schemas, skill listing, memory files) and the levers to shrink it.
 
 ## Status
 `python3 .ctx/ctx.py status` — current context tokens (newest transcript) and core size.

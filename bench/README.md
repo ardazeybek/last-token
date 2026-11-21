@@ -7,8 +7,12 @@ long spec, a legacy module and a 3,000-line log) with headless Claude Code under
 |---|---|
 | a | no system: native defaults, one long session |
 | b | no system, but start a **new chat** when context ≥ 60 % and re-explain the project (rules + "look around the repo") |
-| c | context-economy installed (`system/ctx.py init`) |
+| c | last-token installed (`system/ctx.py init`) |
 | d | ablation: only the two early-compaction settings c writes (`autoCompactWindow`, `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`), nothing else |
+| e–j | experiments on top of c (rtk, clip [removed], batching rule, skill cap, no Agent, low effort); see docs/BENCHMARK.md |
+| k | c + the mod (`--plugin-dir system/mod`) |
+| l | k at a lower trigger |
+| m | k + `effortLevel: low` (best measured) |
 
 All conditions: same model, same tools (`Task,Bash,Read,Edit,Write,Skill`), `--autocompact 200000`
 (200K reference window), `--setting-sources project` (your user settings/hooks are not loaded),
@@ -22,7 +26,9 @@ otherwise. A turn that hits a network error or whose transcript stalls for 6 min
 | `fixture.py` | generates the deterministic starting project (spec, legacy code, logs, CSVs) |
 | `steps.py` | the 32 user turns, the 10 house rules, recall ground truth, new-chat brief |
 | `run.py` | runs one condition; saves `state.json` (per-step context, usage) + transcripts |
+| `resume.sh` | wraps `run.py`: after a rate-limit/network stop waits 20 min and resumes with the printed `--steps` |
 | `score.py` | scores a run (tokens, peak fill, rules R1–R10, recall, tests); `--table` prints markdown |
+| `quota_probe.py` / `usage_window.py` | spend one token type / sum all sessions' usage in a time window: fit the plan quota formula (RESEARCH.md) |
 | `probes/probe_compaction.sh` | reproduces the Claude Code behaviours the design relies on |
 
 ```bash

@@ -206,16 +206,25 @@ def score(run_dir: Path) -> dict:
             **check_recall(work), "tests": run_tests(work)}
 
 
+# Plan quota weights, in % of the Pro 5-hour window per token (Haiku, measured 2026-11-21, RESEARCH.md).
+QUOTA_W = {"input": 4.6e-6, "cache_write": 4.6e-6, "output": 5.0e-6, "cache_read": 0.15e-6}
+
+
+# Estimated plan quota of a scored run (% of a 5-hour window, Haiku-equivalent).
+def quota(r: dict) -> float:
+    return round(sum(r.get(k, 0) * w for k, w in QUOTA_W.items()), 2)
+
+
 # ---- table -------------------------------------------------------------------------
 def table(files: list[str]) -> str:
     """Markdown summary table of scored runs."""
     rows = [json.loads(Path(f).read_text()) for f in files]
-    head = ("| run | cond | total tokens | cost $ | peak fill | step ≥60% | mean ctx/call | calls | compactions | new chats "
+    head = ("| run | cond | quota % | total tokens | cost $ | peak fill | step ≥60% | mean ctx/call | calls | compactions | new chats "
             "| rules | late rules | recall | applied | tests |")
-    out = [head, "|" + "---|" * 15]
+    out = [head, "|" + "---|" * 16]
     for r in rows:
         t = r["tests"]
-        out.append(f"| {Path(r['run']).parent.name}/{Path(r['run']).name} | {r['cond']} | {r['total_tokens']:,} | {r['cost_usd']} "
+        out.append(f"| {Path(r['run']).parent.name}/{Path(r['run']).name} | {r['cond']} | {quota(r)} | {r['total_tokens']:,} | {r['cost_usd']} "
                    f"| {r['peak_fill']:.0%} | {r['first_step_60pct'] or '—'} | {r['mean_ctx_per_call']:,} | {r['api_calls']} "
                    f"| {r['compactions']} | {r['new_chats']} | {r['rule_score']:.0%} | {r['late_rule_score']:.0%} "
                    f"| {r['recall']:.0%} | {r['applied_score']:.0%} | {t['ran']} {'ok' if t['ok'] else 'FAIL'} |")

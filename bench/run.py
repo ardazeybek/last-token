@@ -3,9 +3,9 @@
 
   a = no system (native defaults, one long session)
   b = no system + start a new chat (re-explaining the project) when context >= --newchat-at
-  c = context-economy installed
+  c = last-token installed
 
-usage: run.py --cond a|b|c|d --dir RUN_DIR [--model haiku] [--steps 1-32] [--pct 35]
+usage: run.py --cond a|b|c|d|e|f|g --dir RUN_DIR [--model haiku] [--steps 1-32] [--pct 35]
 """
 from __future__ import annotations
 
@@ -74,26 +74,56 @@ def compactions(tp: Path) -> list[dict]:
     return out
 
 
-def claude_cmd(model: str, prompt: str, sid: str, resume: bool) -> list[str]:
+MOD_DIR = HERE.parent / "system" / "mod"
+MOD_CONDS = "klm"  # conditions that load the last-token mod
+
+
+EFFORT = ""  # --effort for every turn of every condition (same for a and k: fair quality comparison)
+
+
+def claude_cmd(model: str, prompt: str, sid: str, resume: bool, cond: str = "") -> list[str]:
     """Build the headless claude command line."""
     cmd = ["claude", "-p", prompt, "--model", model, "--setting-sources", "project", "--strict-mcp-config",
            "--tools", TOOLS, "--permission-mode", "bypassPermissions", "--output-format", "json",
            "--autocompact", str(WINDOW)]
+    if cond and cond in MOD_CONDS:
+        cmd += ["--plugin-dir", str(MOD_DIR)]
+    if EFFORT:
+        cmd += ["--effort", EFFORT]
     return cmd + (["--resume", sid] if resume else ["--session-id", sid])
 
 
+BATCH_RULE = "6. Batch independent commands/reads into one message. Do not re-read a file you just wrote or edited."
+
+
 def prepare(work: Path, cond: str, pct: int) -> None:
-    """Create a fresh fixture project; install context-economy (c) or early compaction only (d)."""
+    """Create a fresh fixture project; install last-token (c) or early compaction only (d)."""
     if work.exists():
         shutil.rmtree(work)
     fixture.build(work)
-    if cond == "d":  # ablation: early native compaction only, no context-economy
+    if cond == "d":  # ablation: early native compaction only, no last-token
         (work / ".claude").mkdir(exist_ok=True)
         (work / ".claude" / "settings.json").write_text(json.dumps(
             {"autoCompactWindow": WINDOW, "env": {"CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": str(pct)}}, indent=2) + "\n")
-    if cond == "c":
-        subprocess.run([sys.executable, str(HERE.parent / "system" / "ctx.py"), "init", str(work), "--pct", str(pct)],
-                       check=True, stdout=subprocess.DEVNULL)
+    if cond in "cefghijklm":  # c: product; e: + rtk; f: + clip; g: + batching rule 6; h/i/j: lean base
+        lean = {"h": ["--skill-cap", "100"], "i": ["--skill-cap", "100", "--no-agent"],
+                "j": ["--skill-cap", "100", "--effort", "low"], "m": ["--effort", "low"]}.get(cond, [])
+        subprocess.run([sys.executable, str(HERE.parent / "system" / "ctx.py"), "init", str(work), "--pct", str(pct),
+                        "--base", "12000", *lean], check=True, stdout=subprocess.DEVNULL)
+        sf = work / ".claude" / "settings.json"
+        s = json.loads(sf.read_text())
+        if cond == "e":
+            s["hooks"]["PreToolUse"].insert(0, {"matcher": "Bash", "hooks": [
+                {"type": "command", "command": shutil.which("rtk") + " hook claude"}]})
+            s["env"]["CTX_CLIP"] = "off"
+        s["env"]["CTX_CLIP"] = "on" if cond == "f" else "off"
+        if cond in MOD_CONDS:  # deterministic compaction: floor is low, so the trigger may go below safe_pct
+            s["env"]["CLAUDE_AUTOCOMPACT_PCT_OVERRIDE"] = str(pct)
+        if cond == "g":
+            md = work / "CLAUDE.md"
+            md.write_text(md.read_text().replace("5. Keep command output short (`-q`, `| tail -n 30`).",
+                "5. Keep command output short (`-q`, `| tail -n 30`).\n" + BATCH_RULE))
+        sf.write_text(json.dumps(s, indent=2) + "\n")
 
 
 def last_activity(sid: str, since: float) -> float:
@@ -134,7 +164,7 @@ def run_step(args, work: Path, state: dict, n: int) -> dict:
         state["sessions"].append(str(uuid.uuid4()))
     sid = state["sessions"][-1]
     t0 = time.time()
-    out = run_claude(claude_cmd(args.model, prompt, sid, not new_chat), work, sid)
+    out = run_claude(claude_cmd(args.model, prompt, sid, not new_chat, args.cond), work, sid)
     try:
         res = json.loads(out.strip().splitlines()[-1]) if out.strip() else {"is_error": True, "result": "no output"}
     except ValueError:
@@ -198,13 +228,17 @@ def leaking_memory(run_dir: Path) -> list[Path]:
 def main() -> int:
     """Run all requested steps of one condition and save per-step records."""
     ap = argparse.ArgumentParser()
-    ap.add_argument("--cond", choices="abcd", required=True)
+    ap.add_argument("--cond", choices="abcdefghijklm", required=True)
     ap.add_argument("--dir", required=True)
     ap.add_argument("--model", default="haiku")
+    ap.add_argument("--modjson", default="", help="JSON written to .ctx/mod.json (mod conditions), e.g. '{\"compact\":\"digest\"}'")
+    ap.add_argument("--effort", default="", help="effort level passed to every turn (low..max)")
     ap.add_argument("--steps", default=f"1-{len(STEPS)}")
     ap.add_argument("--pct", type=int, default=35)
     ap.add_argument("--newchat-at", type=float, default=0.60)
     args = ap.parse_args()
+    global EFFORT
+    EFFORT = args.effort
     run_dir = Path(args.dir).resolve()
     work = run_dir / "work"
     leaks = leaking_memory(run_dir)
@@ -216,7 +250,9 @@ def main() -> int:
     if lo == 1:
         run_dir.mkdir(parents=True, exist_ok=True)
         prepare(work, args.cond, args.pct)
-        state = {"cond": args.cond, "model": args.model, "pct": args.pct, "sessions": [], "calls_seen": {}, "last_ctx": 0, "steps": []}
+        if args.modjson:
+            (work / ".ctx" / "mod.json").write_text(args.modjson + "\n")
+        state = {"cond": args.cond, "model": args.model, "pct": args.pct, "effort": args.effort, "modjson": args.modjson, "sessions": [], "calls_seen": {}, "last_ctx": 0, "steps": []}
     else:
         state = json.loads(state_f.read_text())
         rollback(state, lo)

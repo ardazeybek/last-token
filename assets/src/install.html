@@ -1,0 +1,62 @@
+<!doctype html>
+<!-- install.html — source of assets/install.png: the three install steps and the success line -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+  .steps { margin-top: 36px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .step { padding: 0 36px; border-left: 1px solid var(--rule); }
+  .step:first-child { padding-left: 0; border-left: 0; }
+  .step:last-child { padding-right: 0; }
+  .n { font-family: var(--serif); font-weight: 600; font-size: 34px; color: var(--brand); line-height: 1; }
+  .step h2 { margin-top: 14px; font-size: 24px; font-weight: 600; }
+  .step p { margin-top: 6px; font-size: 18px; color: var(--ink-2); line-height: 1.5; }
+  .ill { margin-top: 22px; height: 122px; border-radius: 10px; border: 1px solid var(--edge); background: #fff;
+    padding: 14px 16px; font-family: var(--mono); font-size: 16px; line-height: 1.55; color: var(--ink-2); position: relative; overflow: hidden; }
+  .ill .copy { position: absolute; right: 12px; top: 12px; }
+  .ill div { white-space: nowrap; }
+  .fade { -webkit-mask-image: linear-gradient(90deg, #000 84%, transparent); }
+  .prompt { color: var(--ink); }
+  .prompt::before { content: "> "; color: var(--brand); }
+  .caret { display: inline-block; width: 8px; height: 15px; background: var(--ink); vertical-align: -3px; }
+  .sl { position: absolute; left: 0; right: 0; bottom: 0; padding: 9px 16px; border-top: 1px solid var(--edge); background: #F3F0EA; display: flex; gap: 18px; color: var(--ink-3); }
+  .sl .ok { color: var(--brand); font-weight: 500; }
+
+  /* Terminal: what the installer prints last */
+  .term { margin-top: 36px; background: var(--term); border-radius: 12px; padding: 20px 24px; font-family: var(--mono); font-size: 16px; line-height: 1.7; color: #C9CCD3; white-space: nowrap; }
+  .term .y { color: #E9C46A; }
+  .term .w { color: #fff; font-weight: 500; }
+  .term .d { color: #7F8590; }
+  .term .g { color: #7FD1A0; }
+</style></head>
+<body><div class="panel" id="cv">
+  <h1>Install: paste one sentence into Claude Code</h1>
+  <p class="lede">No config files, no flags. Claude Code does the install, tunes it to your usage and checks every part.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="n">1</div><h2>Copy one sentence</h2><p>From the box right under this picture.</p>
+      <div class="ill">
+        <svg class="copy" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--ink-3)" stroke-width="1.4"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg>
+        <div class="fade" style="width:88%;color:var(--ink)">Install Last Token for me: clone https://github.com/ardazeybek/last-token</div><div class="fade" style="width:88%">into ~/.claude/last-token/src, then read INSTALL.md</div><div class="fade" style="width:88%">there and follow it step by step.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">2</div><h2>Paste it into Claude Code</h2><p>Terminal, desktop app or any IDE.</p>
+      <div class="ill">
+        <div class="prompt fade">Install Last Token for me: clone https://github.com/…</div>
+        <div style="margin-top:6px;color:var(--ink-3)">● Cloning last-token…</div><div style="color:var(--ink-3)">● Reading INSTALL.md</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">3</div><h2>Open a new chat</h2><p>The status line shows it is running.</p>
+      <div class="ill">
+        <div class="prompt"><span class="caret"></span></div>
+        <div class="sl"><span>opus</span><span>~/my-project</span><span class="ok">last-token ✓</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="term">
+    <div><span class="g">✓</span> Compaction tuned to YOUR usage <span class="d">opus-5-5 ~184K, sonnet-5-5 ~200K, ...</span></div>
+    <div><span class="y">★</span> <span class="w">Last Token 1.0.0 is installed.</span> Open a NEW Claude Code session; the status line shows 'last-token ✓'.</div>
+  </div>
+</div>
+<script src="fit.js"></script>
+</body></html>

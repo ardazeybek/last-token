@@ -1,0 +1,73 @@
+{
+ "run": "/var/tmp/bench/s1/a",
+ "cond": "a",
+ "model": "sonnet",
+ "pct": 35,
+ "steps_done": 32,
+ "total_tokens": 10511983,
+ "input": 2824,
+ "output": 165526,
+ "cache_read": 10123983,
+ "cache_write": 219650,
+ "cost_usd": 3.5516,
+ "peak_ctx": 162500,
+ "peak_fill": 0.812,
+ "first_step_60pct": 18,
+ "mean_ctx_per_call": 78929,
+ "api_calls": 129,
+ "compactions": 1,
+ "new_chats": 0,
+ "errors": 0,
+ "wall_min": 21.8,
+ "rules": {
+  "R1": 1.0,
+  "R2": 1.0,
+  "R3": 1.0,
+  "R4": 1.0,
+  "R5": 1.0,
+  "R6": 1.0,
+  "R7": 1.0,
+  "R8": 1.0,
+  "R9": 1.0,
+  "R10": 1.0
+ },
+ "rule_score": 1.0,
+ "late_rules": {
+  "R1": 1.0,
+  "R2": 1.0,
+  "R3": 1.0,
+  "R4": 1.0,
+  "R5": 1.0,
+  "R6": 1.0,
+  "R7": 1.0,
+  "R8": 1.0
+ },
+ "late_rule_score": 1.0,
+ "answers": {
+  "contact": true,
+  "dev_port": true,
+  "rounding_mode": true,
+  "vendor_header": true,
+  "refund_window_days": true,
+  "codename": true,
+  "failing_currency": true,
+  "dozen_discount_pct": true,
+  "cli_name": true,
+  "report_sort": true
+ },
+ "recall": 1.0,
+ "applied": {
+  "rounding_half_even": true,
+  "refund_45": true,
+  "vendor_header": true,
+  "dev_port": true,
+  "cli_name": true,
+  "notes_codename": true,
+  "notes_contact": true
+ },
+ "applied_score": 1.0,
+ "tests": {
+  "ran": 224,
+  "ok": true
+ }
+}
