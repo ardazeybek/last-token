@@ -172,7 +172,7 @@ class GlobalMode(unittest.TestCase):
         import io
         self.io = io
         self.tmp = tempfile.TemporaryDirectory()
-        t = Path(self.tmp.name)
+        t = Path(self.tmp.name).resolve()  # macOS: /var -> /private/var
         self.saved = (ctx.LT_HOME, ctx.GLOBAL_FLAG, ctx.STORE, ctx.USER_SETTINGS, ctx.MOD_HOME)
         self.saved_tune, ctx.TUNE_PROJECTS = ctx.TUNE_PROJECTS, Path(tempfile.mkdtemp())
         self.temp_dirs, ctx.TEMP_DIRS = ctx.TEMP_DIRS, ()  # test folders live under /tmp
