@@ -14,7 +14,7 @@ chrome() {
 CH="$(chrome)"
 
 # Measure the panel height, then screenshot at that exact size
-names=("$@"); [ ${#names[@]} -eq 0 ] && names=(hero install quota-formula token-trap how-it-works benchmark)
+names=("$@"); [ ${#names[@]} -eq 0 ] && names=(banner highlights install quota-formula token-trap how-it-works benchmark)
 for n in "${names[@]}"; do
   f="file://$SRC/$n.html"
   h=$("$CH" --headless=new --disable-gpu --hide-scrollbars --virtual-time-budget=4000 --window-size=1280,2000 \

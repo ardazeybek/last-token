@@ -30,6 +30,6 @@ Run: `python3 ~/.claude/last-token/ctx.py doctor`
 Show the doctor output in a code block, then say, in their language, roughly:
 > ✅ Last Token is installed. Open a **new** Claude Code session: you'll see `last-token ✓` at the
 > bottom. From now on it works by itself in every project. Your limit will last longer, and
-> rules/decisions you give me survive compactions. To uninstall: `python3 ~/.claude/last-token/ctx.py global off && python3 ~/.claude/last-token/ctx.py mod uninstall`
+> rules/decisions you give me survive compactions. New versions install themselves in the background. To uninstall: `python3 ~/.claude/last-token/ctx.py global off && python3 ~/.claude/last-token/ctx.py mod uninstall`
 
 Do not change anything else in the person's settings or projects.

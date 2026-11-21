@@ -1,22 +1,51 @@
 <div align="center">
+  <img src="assets/logo.svg" alt="Last Token logo" width="104" />
+  <h1>Last Token</h1>
+  <p><strong>Make your Claude Code plan last longer: −28 % plan quota on the same work.</strong></p>
+  <p>A drop-in add-on for Claude Code that spends your quota where it is cheap. Same work, same quality, nothing forgotten.</p>
 
-<img src="assets/banner.jpg" alt="Last Token: get more out of Claude" width="100%">
+  <p>
+    <img src="https://img.shields.io/badge/Claude%20Code-terminal%20%7C%20desktop%20%7C%20IDE-D97757" alt="Works in the Claude Code terminal, desktop app and IDEs" />
+    <img src="https://img.shields.io/badge/plans-Pro%20%7C%20Max-141413" alt="For Claude Pro and Max plans" />
+    <img src="https://img.shields.io/badge/python-3.9%2B%20%C2%B7%20stdlib%20only-3D3D3A" alt="Python 3.9+, standard library only" />
+  </p>
+  <p>
+    <a href="https://github.com/ardazeybek/last-token/actions/workflows/ci.yml"><img src="https://github.com/ardazeybek/last-token/actions/workflows/ci.yml/badge.svg" alt="Test status" /></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-B9B6AB" alt="MIT license" /></a>
+    <img src="https://img.shields.io/badge/telemetry-none-788C5D" alt="No telemetry" />
+    <img src="https://img.shields.io/badge/price-free-E8E6DC" alt="Free" />
+  </p>
 
-<img src="assets/hero.png" alt="Last Token: plan quota −28 %, same quality" width="100%">
+  <p>
+    <a href="https://github.com/ardazeybek/last-token/releases/latest/download/install-last-token.md"><img src="assets/install-button.svg" alt="Download the installer" height="56" /></a>
+  </p>
 
-# Your Claude Code limit runs out too fast. Here is why, and the fix.
+  <p>
+    <b>① Click the button</b> &nbsp;→&nbsp; <b>② Drag the downloaded file into Claude Code, press Enter</b> &nbsp;→&nbsp; <b>③ Done.</b><br />
+    <sub>Nothing to type. Claude installs it, tunes it to your usage and keeps it updated by itself.</sub>
+  </p>
 
-**Last Token makes your Claude Pro / Max plan last longer: −28 % plan quota on the same work, with nothing forgotten.**<br>
-One sentence to install. Zero settings to touch. Then you never think about it again.
-
-[**Install in 30 seconds**](#-install-in-30-seconds) · [The quota formula](#-the-discovery-the-quota-formula) · [The token trap](#-the-token-trap-why-most-token-savers-backfire) · [Benchmark](#-the-benchmark)
-
-![license](https://img.shields.io/badge/license-MIT-FF5A1F?style=flat-square)
-![python](https://img.shields.io/badge/python-3.9%2B%20·%20stdlib%20only-101418?style=flat-square)
-![works with](https://img.shields.io/badge/Claude%20Code-terminal%20·%20desktop%20·%20IDE-101418?style=flat-square)
-![telemetry](https://img.shields.io/badge/telemetry-none-36D399?style=flat-square)
-
+  <p>
+    <a href="#-install-in-30-seconds">Install</a> ·
+    <a href="#-the-discovery-the-quota-formula">Quota formula</a> ·
+    <a href="#-the-token-trap-why-most-token-savers-backfire">Token trap</a> ·
+    <a href="#%EF%B8%8F-how-it-works">How it works</a> ·
+    <a href="#-the-benchmark">Benchmark</a> ·
+    <a href="CONTRIBUTING.md">Contribute</a>
+  </p>
 </div>
+
+<p align="center">
+  <img src="assets/banner.png" alt="Last Token: get more out of your Claude plan. −28 % plan quota per task, one file to install, zero settings." width="100%" />
+</p>
+
+---
+
+## ✨ Why Last Token?
+
+<p align="center">
+  <img src="assets/highlights.png" width="100%" alt="Lasts longer: the same task takes 28 % less of your 5-hour window. Same quality: rules kept, facts recalled, tests passing. Stays local: one Python file, no server, no account, no telemetry. No setup: drop one file into Claude Code." />
+</p>
 
 ---
 
@@ -29,19 +58,18 @@ One sentence to install. Zero settings to touch. Then you never think about it a
 > token-cutting version used **34 % fewer tokens and cost 69 % more.**
 >
 > Last Token is built on the real formula, so it attacks the expensive tokens instead.
-> Want it? **Copy the sentence below into Claude Code. That's the whole install.**
+> Want it? **[Download the installer](https://github.com/ardazeybek/last-token/releases/latest/download/install-last-token.md) and drop it into Claude Code. That's the whole install.**
 
 ---
 
 ## ⚡ Install in 30 seconds
 
-<img src="assets/install.png" alt="1 copy, 2 paste into Claude Code, 3 done" width="100%">
+<img src="assets/install.png" alt="1 download the installer, 2 drop it into Claude Code and press Enter, 3 open a new chat" width="100%">
 
-**Paste this into Claude Code** (terminal, desktop app, VS Code, JetBrains, any of them):
-
-```text
-Install Last Token for me: clone https://github.com/ardazeybek/last-token into ~/.claude/last-token/src, then read INSTALL.md there and follow it step by step.
-```
+1. **[Download the installer](https://github.com/ardazeybek/last-token/releases/latest/download/install-last-token.md)** (`install-last-token.md`, 1 KB).
+2. **Drag it into Claude Code** (terminal, desktop app, VS Code, JetBrains, any of them) **and press Enter.**
+   You don't type anything: the file tells Claude what to do.
+3. **Open a new chat.** Done.
 
 Claude downloads it, installs it for **every** Claude Code session, **tunes it to your own
 usage** (your models, your typical session size), checks every part and ends with:
@@ -54,16 +82,33 @@ usage** (your models, your typical session size), checks every part and ends wit
   ✅ Mod (no-LLM compaction, cold pruning)    compaction without a paid summarizer call
   ✅ Compaction tuned to YOUR usage           opus-5-5 ~184K, sonnet-5-5 ~200K, ...
 
-  ★ Last Token 1.0.0 is installed. Open a NEW Claude Code session; the status line shows 'last-token ✓'.
+  ★ Last Token 1.1.0 is installed. Open a NEW Claude Code session; the status line shows 'last-token ✓'.
 ```
 
 Open a new chat. You'll see **`last-token ✓`** at the bottom. That's it: it now works on its own, in every project.
+
+### 🔄 Updates itself
+
+Every time Claude Code starts, Last Token checks GitHub in the background (at most every 3 hours,
+it never slows the start). A new version is pulled, installed and checked with `doctor` on its own.
+If anything goes wrong, it opens **one** background Claude Code session that reinstalls the latest
+version cleanly (log: `~/.claude/last-token/update.log`). Turn it off with
+`echo '{"auto": false}' > ~/.claude/last-token/update.json`; update by hand with
+`python3 ~/.claude/last-token/ctx.py self-update`.
+
+<details>
+<summary><b>Rather paste a sentence?</b></summary>
+
+```text
+Install Last Token for me: clone https://github.com/ardazeybek/last-token into ~/.claude/last-token/src, then read INSTALL.md there and follow it step by step.
+```
+</details>
 
 <details>
 <summary><b>Prefer the terminal? One line.</b></summary>
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ardazeybek/last-token/main/get.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ardazeybek/last-token/master/get.sh | bash
 ```
 
 Needs `git` and `python3` (3.9+). macOS, Linux and Windows through WSL.
@@ -229,10 +274,23 @@ Internals: [docs/DESIGN.md](docs/DESIGN.md) · [docs/RESEARCH.md](docs/RESEARCH.
 
 ---
 
+## 🤝 Contributing
+
+Quota reports, bug reports, tests on other setups and doc fixes are all welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md); please follow the [code of conduct](CODE_OF_CONDUCT.md).
+
+## 💬 Support
+
+- **Bugs and ideas:** [GitHub Issues](https://github.com/ardazeybek/last-token/issues)
+- **Questions and your quota numbers:** [GitHub Discussions](https://github.com/ardazeybek/last-token/discussions)
+- **Security problems:** see [SECURITY.md](SECURITY.md)
+
+## 📜 License
+
+[MIT](LICENSE) © Arda Zeybek. Last Token is an independent project and is not affiliated with or endorsed by Anthropic. Claude and Claude Code are trademarks of Anthropic.
+
 <div align="center">
+<br>
 
 **If Last Token gave you back some hours of Claude, a ⭐ helps others find it.**
-
-MIT © Arda Zeybek · Not affiliated with Anthropic.
 
 </div>

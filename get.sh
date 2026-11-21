@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # get.sh — one-line installer: downloads Last Token into ~/.claude/last-token/src and turns it on globally.
-#   curl -fsSL https://raw.githubusercontent.com/ardazeybek/last-token/main/get.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/ardazeybek/last-token/master/get.sh | bash
 set -euo pipefail
 REPO="https://github.com/ardazeybek/last-token.git"
 SRC="$HOME/.claude/last-token/src"

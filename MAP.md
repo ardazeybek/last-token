@@ -5,7 +5,9 @@
 - `bench/` — reproducible benchmark: fixture generator, 32 steps, runner, scorer, probes.
 - `results/` — scored benchmark runs (`<round>-<cond>.json`), referenced by BENCHMARK.md.
 - `docs/` — RESEARCH (internals, quota formula), DESIGN (why), BENCHMARK (all rounds), ROADMAP (next levers), AUDIT.
-- root — `install.sh`, README, MAP, CLAUDE.md, LICENSE.
+- `assets/` — README images (logo, banner, charts) rendered from `assets/src/*.html`; style in DESIGN.md.
+- `.github/` — CI (Python tests), issue and PR templates.
+- root — `install.sh`, `get.sh`, `install-last-token.md` (the file users drop into Claude Code; also the release asset behind the README button), README, INSTALL (steps Claude follows), MAP, DESIGN, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT, LICENSE.
 
 ## Main flow (installed project)
 1. `install.sh <project>` → `ctx.py init`: creates `.ctx/`, protocol block in CLAUDE.md,
@@ -34,6 +36,10 @@
    user hooks with `--global` (`hook-session` injects protocol + memory at SessionStart, `hook-precompact`,
    `hook-guard`); memory per folder in `~/.claude/last-token/store/<slug>/.ctx` (`store_root`);
    a folder under a project `.ctx/` uses that one (`global_turn` skips; also /tmp, /var/tmp, scratch: `TEMP_DIRS`). `--global off` undoes.
+10. Self-update: `hook-session` → `update_check()` (every 3 h, only with a `~/.claude/last-token/src` git clone,
+   `update.json {"auto": false}` = off, `LT_NO_UPDATE` env skips) → background `ctx.py self-update`: fetch, pull,
+   `install.sh --global`, `doctor`; any failure → one `claude -p` repair session per target commit (`repair.log`).
+   Release asset `install-last-token.md` must be attached to every GitHub release (README button = releases/latest).
 
 ## Benchmark flow
 `bench/run.py --cond a..m` (k = c+mod, m = c+mod+effort low; e–j, l experiments; `bench/resume.sh` waits out rate limits) → fresh fixture (`fixture.py`) → 32 × `claude -p` (resume) →

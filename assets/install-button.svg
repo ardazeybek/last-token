@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="248" height="56" viewBox="0 0 248 56">
+  <!-- Install button for the README header (Claude clay) -->
+  <rect width="248" height="56" rx="12" fill="#D97757"/>
+  <path d="M30 18v14m0 0l-6-6m6 6l6-6M22 38h16" fill="none" stroke="#FAF9F5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="54" y="35" font-family="'Hanken Grotesk','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="19" font-weight="600" fill="#FAF9F5">Download installer</text>
+</svg>

@@ -1,0 +1,11 @@
+name: Idea
+description: Suggest a way to make the quota last even longer.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What should change, and which tokens (cache write, output, cache read) it would save.
+    validations:
+      required: true

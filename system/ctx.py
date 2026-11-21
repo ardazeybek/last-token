@@ -18,7 +18,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 # ---- tunables (can be overridden with env vars of the same name) -----------------
 CTX_DIR = ".ctx"
@@ -1704,6 +1704,7 @@ def hook_session(args: list[str]) -> int:
     print(global_core(resolve_root(cwd), Path(cwd).resolve()))
     if global_enabled():
         retune_daily()
+        update_check()
     return 0
 
 
@@ -1891,6 +1892,92 @@ def retune_daily() -> None:
                          stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, start_new_session=True)
     except Exception:
         pass
+
+
+# ---- self-update: new GitHub version installs itself; a failed update asks Claude to repair it ----
+UPDATE = LT_HOME / "update.json"   # {"auto": false} turns auto-update off; also holds the last check
+UPDATE_EVERY = 3 * 3600            # check GitHub at most every 3 hours (SessionStart stays instant)
+REPAIR_PROMPT = ("Last Token's automatic update failed on this computer. The log is in "
+                 "~/.claude/last-token/update.log. Install the latest Last Token from GitHub "
+                 "(https://github.com/ardazeybek/last-token) for the whole system without errors: in "
+                 "~/.claude/last-token/src run `git fetch origin && git reset --hard @{u}`, then follow "
+                 "INSTALL.md steps 3-4 until `python3 ~/.claude/last-token/ctx.py doctor` exits 0. "
+                 "Change nothing outside ~/.claude/last-token and ~/.claude/settings.json.")
+
+
+def update_check() -> None:
+    """Start `self-update` in the background when the last check is older than UPDATE_EVERY (never raises)."""
+    try:
+        state = read_settings(UPDATE)
+        if (os.environ.get("LT_NO_UPDATE") or state.get("auto") is False or not (LT_HOME / "src" / ".git").is_dir()
+                or time.time() - float(state.get("at") or 0) < UPDATE_EVERY):
+            return
+        UPDATE.write_text(json.dumps({**state, "at": time.time()}) + "\n")  # no second start meanwhile
+        import subprocess
+        subprocess.Popen([sys.executable, str(LT_HOME / "ctx.py"), "self-update"], stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, start_new_session=True)
+    except Exception:
+        pass
+
+
+def run_logged(cmd: list[str], cwd: Path, log) -> bool:
+    """Run one update step, append its output to the log, return True on exit code 0."""
+    import subprocess
+    try:
+        r = subprocess.run(cmd, cwd=str(cwd), capture_output=True, text=True, timeout=600,
+                           env={**os.environ, "LT_NO_UPDATE": "1"})
+    except Exception as e:
+        log.write(f"$ {' '.join(cmd)}\n{e}\n")
+        return False
+    log.write(f"$ {' '.join(cmd)}  (exit {r.returncode})\n{r.stdout[-2000:]}{r.stderr[-2000:]}\n")
+    return r.returncode == 0
+
+
+def start_repair(target: str, state: dict) -> str:
+    """Open one background Claude Code session that reinstalls Last Token (once per target commit)."""
+    import shutil
+    import subprocess
+    claude = shutil.which("claude")
+    if not claude or state.get("repaired_for") == target:
+        return "repair skipped" if claude else "repair skipped: no claude CLI"
+    out = open(LT_HOME / "repair.log", "a")
+    subprocess.Popen([claude, "-p", REPAIR_PROMPT, "--allowedTools", "Bash", "Read", "Edit", "Write"],
+                     cwd=str(LT_HOME), stdout=out, stderr=out, stdin=subprocess.DEVNULL, start_new_session=True,
+                     env={**os.environ, "LT_NO_UPDATE": "1"})
+    state["repaired_for"] = target
+    return "repair session started (log: repair.log)"
+
+
+def cmd_self_update(args: list[str]) -> int:
+    """self-update [--force]: pull the newest version from GitHub and reinstall; on failure start a repair session."""
+    src, state = LT_HOME / "src", read_settings(UPDATE)
+    if not (src / ".git").is_dir():
+        print("no ~/.claude/last-token/src clone: install with get.sh first")
+        return 1
+    import subprocess
+    git = lambda *a: subprocess.run(["git", "-C", str(src), *a], capture_output=True, text=True, timeout=120)  # noqa: E731
+    # Is there anything new?
+    if git("fetch", "-q", "origin").returncode != 0:
+        print("offline or GitHub unreachable: try later")
+        return 0
+    head, target = git("rev-parse", "HEAD").stdout.strip(), git("rev-parse", "@{u}").stdout.strip()
+    state.update(at=time.time())
+    if head == target and "--force" not in args:
+        UPDATE.write_text(json.dumps(state) + "\n")
+        print(f"Last Token {VERSION} is up to date")
+        return 0
+    # Update + reinstall + verify, every step logged
+    with open(LT_HOME / "update.log", "a") as log:
+        log.write(f"\n== {time.strftime('%Y-%m-%d %H:%M')} update {head[:7]} -> {target[:7]}\n")
+        ok = (run_logged(["git", "pull", "-q", "--ff-only"], src, log)
+              and run_logged(["bash", "install.sh", "--global"], src, log)
+              and run_logged([sys.executable, str(LT_HOME / "ctx.py"), "doctor"], src, log))
+        msg = "updated" if ok else start_repair(target, state)
+        log.write(msg + "\n")
+    state.update(ok=ok, target=target)
+    UPDATE.write_text(json.dumps(state) + "\n")
+    print(msg)
+    return 0 if ok else 1
 
 
 def cmd_trigger(args: list[str]) -> int:
@@ -2087,7 +2174,7 @@ def cmd_panel(args: list[str]) -> int:
 
 COMMANDS = {"init": cmd_init, "note": cmd_note, "decide": cmd_decide, "rule": cmd_rule,
             "recall": cmd_recall, "pause": cmd_pause, "resume": lambda a: cmd_pause(a, on=False), "trigger": cmd_trigger, "check": cmd_check, "doctor": cmd_doctor, "status": cmd_status, "audit": cmd_audit,
-            "savings": cmd_savings, "panel": cmd_panel, "tune": cmd_tune, "global": cmd_global, "hook-session": hook_session, "compact-summary": cmd_compact_summary, "mod": cmd_mod, "hook-precompact": hook_precompact, "hook-guard": hook_guard}
+            "savings": cmd_savings, "panel": cmd_panel, "tune": cmd_tune, "self-update": cmd_self_update, "global": cmd_global, "hook-session": hook_session, "compact-summary": cmd_compact_summary, "mod": cmd_mod, "hook-precompact": hook_precompact, "hook-guard": hook_guard}
 
 
 def main(argv: list[str]) -> int:

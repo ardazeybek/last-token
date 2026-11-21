@@ -1,0 +1,50 @@
+<!doctype html>
+<!-- banner.html — source of assets/banner.png: logo, name, tagline and a stacked-token illustration -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+  .panel { padding: 72px 72px 64px; display: grid; grid-template-columns: 1fr 420px; gap: 40px; align-items: center; }
+  .brand { display: flex; align-items: center; gap: 22px; }
+  .word { font-family: var(--serif); font-weight: 500; font-size: 88px; letter-spacing: -0.02em; line-height: 1; }
+  .tag { margin-top: 34px; font-family: var(--serif); font-size: 44px; line-height: 1.15; font-weight: 400; letter-spacing: -0.01em; }
+  .tag em { font-style: italic; color: var(--brand); }
+  .sub { margin-top: 18px; font-size: 22px; line-height: 1.5; color: var(--ink-2); max-width: 30em; }
+  .facts { margin-top: 40px; display: flex; gap: 0; font-size: 19px; color: var(--ink); }
+  .facts div { padding: 0 28px; border-left: 1px solid var(--rule); line-height: 1.35; }
+  .facts div:first-child { padding-left: 0; border-left: 0; }
+  .facts b { display: block; font-family: var(--serif); font-weight: 500; font-size: 30px; color: var(--brand); }
+  .facts span { color: var(--ink-3); font-size: 17px; }
+</style></head>
+<body><div class="panel" id="cv">
+  <div>
+    <div class="brand"><img src="../logo.svg" width="84" height="84" alt=""><span class="word">Last Token</span></div>
+    <p class="tag">Get <em>more</em> out of your Claude plan.</p>
+    <p class="sub">A drop-in add-on for Claude Code that makes your plan quota last longer, with the same work and the same quality.</p>
+    <div class="facts">
+      <div><b>−28 %</b><span>plan quota per task</span></div>
+      <div><b>1 file</b><span>to install: drop it in</span></div>
+      <div><b>0</b><span>settings to touch</span></div>
+    </div>
+  </div>
+  <svg viewBox="0 0 420 420" width="420" height="420" aria-hidden="true">
+    <!-- soft disc behind the stack -->
+    <circle cx="210" cy="215" r="190" fill="#F0EEE6"/>
+    <!-- stacked tokens: ink outlines, the top one is the last token, in clay -->
+    <g fill="#FAF9F5" stroke="#141413" stroke-width="3">
+      <path d="M110 330 v-24 a100 30 0 0 0 200 0 v24 a100 30 0 0 1 -200 0z"/><ellipse cx="210" cy="306" rx="100" ry="30"/>
+      <path d="M110 284 v-24 a100 30 0 0 0 200 0 v24 a100 30 0 0 1 -200 0z"/><ellipse cx="210" cy="260" rx="100" ry="30"/>
+      <path d="M110 238 v-24 a100 30 0 0 0 200 0 v24 a100 30 0 0 1 -200 0z"/><ellipse cx="210" cy="214" rx="100" ry="30"/>
+    </g>
+    <g stroke="#141413" stroke-width="3">
+      <path d="M110 176 v-24 a100 30 0 0 0 200 0 v24 a100 30 0 0 1 -200 0z" fill="#C4633F"/>
+      <ellipse cx="210" cy="152" rx="100" ry="30" fill="#D97757"/>
+    </g>
+    <ellipse cx="210" cy="152" rx="62" ry="17" fill="none" stroke="#FAF9F5" stroke-width="3" opacity=".8"/>
+    <!-- lift marks: the last token is kept -->
+    <g stroke="#141413" stroke-width="3" stroke-linecap="round">
+      <path d="M86 150 h-22"/><path d="M90 126 l-16 -12"/><path d="M334 150 h22"/><path d="M330 126 l16 -12"/>
+    </g>
+    <path d="M210 52 l6 16 16 6 -16 6 -6 16 -6 -16 -16 -6 16 -6z" fill="#D97757"/>
+  </svg>
+</div>
+<script src="fit.js"></script>
+</body></html>
