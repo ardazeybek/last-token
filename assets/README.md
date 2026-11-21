@@ -31,6 +31,7 @@ Needs a Chromium (Playwright cache or system) and network for Google Fonts. Keep
 - real-session.png — real `/lt-savings` output from one long session (src/real-session.html)
 - social.png — GitHub social preview 1280×640 (src/social.html), upload in Settings → Social preview
 - support-*.png — Clipio-style support cards: issues, discussions, mail (src/support-*.html + support.css)
+- warning.png, plain-words.png, quota-share.png, tools.png, never.png — the warning, the formula in plain words, the 7-day quota split, the tools comparison, the never/under-the-hood boxes (src/*.html)
 - contribute.png — three ways to help, links to CONTRIBUTING.md (src/contribute.html)
 - license.png — MIT, independence note, star request (src/license.html)
 - updates.png — self-update flow (src/updates.html)
