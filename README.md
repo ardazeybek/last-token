@@ -286,24 +286,26 @@ Internals: [docs/DESIGN.md](docs/DESIGN.md) · [docs/RESEARCH.md](docs/RESEARCH.
 
 ---
 
-## 🤝 Contributing and support
+## 🤝 Contributing
 
 <p align="center">
-  <a href="CONTRIBUTING.md"><img src="assets/card-contribute.png" width="49%" alt="Help make it better: quota reports, tests on your setup and doc fixes are welcome" /></a>
-  <a href="https://github.com/ardazeybek/last-token/issues"><img src="assets/card-issues.png" width="49%" alt="Found a bug? Tell us in GitHub Issues" /></a>
-</p>
-<p align="center">
-  <a href="https://github.com/ardazeybek/last-token/discussions"><img src="assets/card-discussions.png" width="49%" alt="Share your numbers: ask a question or post your quota savings in GitHub Discussions" /></a>
-  <a href="SECURITY.md"><img src="assets/card-security.png" width="49%" alt="Security problem? Report it privately, see SECURITY.md" /></a>
+  <a href="CONTRIBUTING.md"><img src="assets/contribute.png" width="100%" alt="Help Last Token get better. You do not need to write code. 1 share your /lt-savings numbers, 2 try it on your setup, 3 fix a word in the docs. Click to read the contributing guide." /></a>
 </p>
 
 <p align="center"><sub>Please follow the <a href="CODE_OF_CONDUCT.md">code of conduct</a>.</sub></p>
 
-## 📜 License
-
-[MIT](LICENSE) © Arda Zeybek. Last Token is an independent project and is not affiliated with or endorsed by Anthropic. Claude and Claude Code are trademarks of Anthropic.
+## 💬 Support
 
 <p align="center">
-  <br />
-  <a href="https://github.com/ardazeybek/last-token/stargazers"><img src="assets/card-star.png" width="49%" alt="Saved you some hours? A star on GitHub helps other people find Last Token." /></a>
+  <a href="https://github.com/ardazeybek/last-token/issues"><img src="assets/support-issues.png" width="32%" alt="Bugs and ideas: GitHub Issues" /></a>
+  <a href="https://github.com/ardazeybek/last-token/discussions"><img src="assets/support-discussions.png" width="32%" alt="Questions: GitHub Discussions" /></a>
+  <a href="https://github.com/ardazeybek/last-token/security/advisories/new"><img src="assets/support-security.png" width="32%" alt="Security problems: report privately" /></a>
 </p>
+
+## 📜 License
+
+<p align="center">
+  <a href="https://github.com/ardazeybek/last-token"><img src="assets/license.png" width="100%" alt="MIT license. Free, yours to use: use it, change it, share it. No account, no telemetry. Copyright Arda Zeybek. An independent project, not affiliated with or endorsed by Anthropic. Claude and Claude Code are trademarks of Anthropic. Did Last Token give you back some hours of Claude? A star on GitHub helps other people find it." /></a>
+</p>
+
+<p align="center"><sub><a href="LICENSE">Read the MIT license</a> · <a href="https://github.com/ardazeybek/last-token">⭐ Star on GitHub</a></sub></p>
