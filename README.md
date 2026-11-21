@@ -41,6 +41,18 @@
 
 ---
 
+## 👀 See it working
+
+You keep working like always. Last Token works in the background and shows you what it saved.
+
+<p align="center">
+  <img src="assets/real-session.png" width="100%" alt="One real coding session of 218 requests: 31 % less plan quota and 28.5 million tokens that were never sent again. The terminal shows the real /lt-savings output." />
+</p>
+
+<p align="center"><sub>Real numbers from one long session. Type <code>/lt-savings</code> to see yours.</sub></p>
+
+---
+
 ## ✨ Why Last Token?
 
 <p align="center">
@@ -274,23 +286,24 @@ Internals: [docs/DESIGN.md](docs/DESIGN.md) · [docs/RESEARCH.md](docs/RESEARCH.
 
 ---
 
-## 🤝 Contributing
+## 🤝 Contributing and support
 
-Quota reports, bug reports, tests on other setups and doc fixes are all welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md); please follow the [code of conduct](CODE_OF_CONDUCT.md).
+<p align="center">
+  <a href="CONTRIBUTING.md"><img src="assets/card-contribute.png" width="49%" alt="Help make it better: quota reports, tests on your setup and doc fixes are welcome" /></a>
+  <a href="https://github.com/ardazeybek/last-token/issues"><img src="assets/card-issues.png" width="49%" alt="Found a bug? Tell us in GitHub Issues" /></a>
+</p>
+<p align="center">
+  <a href="https://github.com/ardazeybek/last-token/discussions"><img src="assets/card-discussions.png" width="49%" alt="Share your numbers: ask a question or post your quota savings in GitHub Discussions" /></a>
+  <a href="SECURITY.md"><img src="assets/card-security.png" width="49%" alt="Security problem? Report it privately, see SECURITY.md" /></a>
+</p>
 
-## 💬 Support
-
-- **Bugs and ideas:** [GitHub Issues](https://github.com/ardazeybek/last-token/issues)
-- **Questions and your quota numbers:** [GitHub Discussions](https://github.com/ardazeybek/last-token/discussions)
-- **Security problems:** see [SECURITY.md](SECURITY.md)
+<p align="center"><sub>Please follow the <a href="CODE_OF_CONDUCT.md">code of conduct</a>.</sub></p>
 
 ## 📜 License
 
 [MIT](LICENSE) © Arda Zeybek. Last Token is an independent project and is not affiliated with or endorsed by Anthropic. Claude and Claude Code are trademarks of Anthropic.
 
-<div align="center">
-<br>
-
-**If Last Token gave you back some hours of Claude, a ⭐ helps others find it.**
-
-</div>
+<p align="center">
+  <br />
+  <a href="https://github.com/ardazeybek/last-token/stargazers"><img src="assets/card-star.png" width="49%" alt="Saved you some hours? A star on GitHub helps other people find Last Token." /></a>
+</p>

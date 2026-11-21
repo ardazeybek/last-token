@@ -19,9 +19,10 @@ for n in "${names[@]}"; do
   f="file://$SRC/$n.html"
   h=$("$CH" --headless=new --disable-gpu --hide-scrollbars --virtual-time-budget=4000 --window-size=1280,2000 \
       --dump-dom "$f" 2>/dev/null | grep -o 'data-h="[0-9]*"' | head -1 | grep -o '[0-9]*' || true)
+  w=$(grep -o 'data-w="[0-9]*"' "$SRC/$n.html" | grep -o '[0-9]*' || true); w=${w:-1280}
   h=${h:-800}
-  "$CH" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --force-color-profile=srgb \
-    --default-background-color=00000000 --virtual-time-budget=4000 --window-size=1280,"$h" \
+  "$CH" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=$([ "$n" = social ] && echo 1 || echo 2) --force-color-profile=srgb \
+    --default-background-color=00000000 --virtual-time-budget=4000 --window-size="$w","$h" \
     --screenshot="$OUT/$n.png" "$f" 2>/dev/null
-  echo "$n.png  1280x$h @2x  $(du -k "$OUT/$n.png" | cut -f1) KB"
+  echo "$n.png  ${w}x$h @2x  $(du -k "$OUT/$n.png" | cut -f1) KB"
 done

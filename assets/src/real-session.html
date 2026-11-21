@@ -1,0 +1,32 @@
+<!doctype html>
+<!-- real-session.html — source of assets/real-session.png: real `ctx.py savings` output from one long coding session (no numbers edited) -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+  .row { display: grid; grid-template-columns: 1fr 1.25fr; gap: 48px; align-items: center; margin-top: 8px; }
+  .big { font-family: var(--serif); font-weight: 600; font-size: 104px; line-height: 1; color: var(--brand); letter-spacing: -0.02em; }
+  .big small { font-size: 40px; color: var(--ink); margin-left: 6px; }
+  .facts { margin-top: 22px; display: grid; gap: 10px; font-size: 18px; color: var(--ink-2); }
+  .facts b { color: var(--ink); font-weight: 600; }
+  .term { background: var(--term); border-radius: 12px; padding: 22px 26px; font-family: var(--mono); font-size: 16px; line-height: 1.75; color: #C9CCD3; white-space: pre; }
+  .term .p { color: #D97757; } .term .w { color: #fff; font-weight: 500; } .term .g { color: #A9C08A; }
+</style></head><body><div class="panel" id="cv">
+  <h1>One real coding session</h1>
+  <p class="lede">A long Claude Code session on a game project, measured by Last Token itself.</p>
+  <div class="row" style="margin-top:36px">
+    <div>
+      <div class="big">31 %<small>less quota</small></div>
+      <div class="facts">
+        <div><b>218</b> requests, <b>1</b> compaction</div>
+        <div><b>28.5 M</b> tokens never sent again</div>
+        <div>No settings, no extra prompts</div>
+      </div>
+    </div>
+<div class="term"><span class="p">&gt;</span> <span class="w">/lt-savings</span>
+
+quota: ~47.1% of a 5-hour window, <span class="g">saved ~20.7% (31% less)</span>
+requests: 218  compactions: 1
+input sent: 42,963,110 tokens
+       <span class="g">saved: 28,529,515 tokens (40% less)</span>
+context now: 209,473 tokens</div>
+  </div>
+</div><script src="fit.js"></script></body></html>
