@@ -5,12 +5,14 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
         python: ["3.9", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      # uv ships every Python version on every runner (setup-python has no 3.9 for Ubuntu 26.04)
+      - uses: astral-sh/setup-uv@v6
         with:
           python-version: ${{ matrix.python }}
-      - run: python -m unittest discover system/tests
+      - run: uv run --no-project python -m unittest discover system/tests
