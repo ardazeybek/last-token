@@ -10,7 +10,7 @@
     <img src="https://img.shields.io/badge/python-3.9%2B%20%C2%B7%20stdlib%20only-3D3D3A" alt="Python 3.9+, standard library only" />
   </p>
   <p>
-    <a href="https://github.com/ardazeybek/last-token/actions/workflows/ci.yml"><img src="https://github.com/ardazeybek/last-token/actions/workflows/ci.yml/badge.svg" alt="Test status" /></a>
+    <a href="https://github.com/ardazeybek/last-token/actions/workflows/ci.yml"><img src="https://github.com/ardazeybek/last-token/actions/workflows/ci.yml/badge.svg?branch=master" alt="Test status" /></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-B9B6AB" alt="MIT license" /></a>
     <img src="https://img.shields.io/badge/telemetry-none-788C5D" alt="No telemetry" />
     <img src="https://img.shields.io/badge/price-free-E8E6DC" alt="Free" />
