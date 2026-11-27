@@ -64,7 +64,7 @@ test('developer view (panel: true): the pane opens even when no surface is liste
   expect(opened).toEqual(['last-token-savings'])
 })
 
-test('default: no pane, the status line says Active', async ($, on) => {
+test('default: no pane, no status line (the band says it)', async ($, on) => {
   const opened: string[] = []
   const status: (string | undefined)[] = []
   project(on, '/p', PANEL_JSON)
@@ -73,7 +73,7 @@ test('default: no pane, the status line says Active', async ($, on) => {
   on('ui.open', (_: any, e: any) => { opened.push(e.id); return { value: { isPlaced: false } } })
   await $.session.start({ cwd: '/p', surface: null, isInteractive: true })
   expect(opened).toEqual([])
-  expect(status).toEqual(['Active'])
+  expect(status).toEqual([])
 })
 
 test('falls back to /usr/bin/python3 when python3 is not on PATH', async ($, on) => {

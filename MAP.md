@@ -29,7 +29,7 @@
    big tool outputs; stub ids in `$.store` per conversation, re-applied to every request (stable cached prefix).
    `coldDigest` (1.5.0): after a cold gap with ≥80K chars of history, the request carries the ctx.py digest + the new
    prompt only (UI keeps everything); the cut is stored per conversation and re-applied while warm.
-   Band above the prompt (1.7.0): green `Last Token Active −N% quota`, red new-chat line when the context is ≥1.6× and ≥50K above a fresh chat (`new_chat_hint`); status line = plain `Active −N%`.
+   Band above the prompt (1.7.0): green `Last Token Active −N% quota`, red new-chat line when the context is ≥1.6× and ≥50K above a fresh chat (`new_chat_hint`); status line = off (1.7.1: the band says it).
    `ui.render` folds only our digest rows (DIGEST_HEAD + `.ctx/archive/`). Paused session → native.
 7. Savings: `turn.complete` → `ctx.py panel --session` → `savings()` (native-only counterfactual) +
    `quota_report()` (QUOTA_W × MODEL_MUL, main + subagents) → `$.state` → "Quota savings" pane + status line (`/lt-savings`).

@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
-  <!-- Last Token mark: a clay tile, an L made of a long and a short token, and a white spark: the last token kept -->
-  <rect width="128" height="128" rx="30" fill="#D97757"/>
-  <rect x="30" y="26" width="20" height="76" rx="10" fill="#FAF9F5"/>
-  <rect x="30" y="82" width="56" height="20" rx="10" fill="#FAF9F5"/>
-  <g stroke="#FAF9F5" stroke-width="6" stroke-linecap="round"><line x1="89" y1="39" x2="89.0" y2="22.0"/><line x1="89" y1="39" x2="98.9" y2="29.1"/><line x1="89" y1="39" x2="105.0" y2="39.0"/><line x1="89" y1="39" x2="98.2" y2="48.2"/><line x1="89" y1="39" x2="89.0" y2="56.0"/><line x1="89" y1="39" x2="79.1" y2="48.9"/><line x1="89" y1="39" x2="73.0" y2="39.0"/><line x1="89" y1="39" x2="79.8" y2="29.8"/></g>
+  <!-- Last Token mark: a clay tile, a rounded L and a hand-drawn spark (the last token kept). Vector, sharp at any size. -->
+  <rect width="128" height="128" rx="32" fill="#D46A4A"/>
+  <path d="M40 23c5.8 0 10.5 4.7 10.5 10.5V78.5h26.5c5.8 0 10.5 4.3 10.5 10s-4.7 10-10.5 10H40.5c-6 0-10.5-4.7-10.5-10.5V33.5C30 27.7 34.2 23 40 23Z" fill="#FAF8F2"/>
+  <g transform="translate(90 43) scale(0.9) translate(-90 -40.5)"><circle cx="90" cy="40.5" r="3.4" fill="#FAF8F2"/>
+  <path d="M90.56 37.69L87.42 22.52A3.1 3.1 0 0 0 81.52 24.43L87.90 38.55ZM92.10 38.55L98.48 24.43A3.1 3.1 0 0 0 92.58 22.52L89.44 37.69ZM92.86 40.56L105.49 35.77A3.1 3.1 0 0 0 102.58 30.30L91.55 38.09ZM92.28 42.23L105.81 45.85A3.1 3.1 0 0 0 106.67 39.71L92.67 39.46ZM90.92 43.21L100.48 54.11A3.1 3.1 0 0 0 104.63 49.50L92.79 41.13ZM89.15 43.24L90.27 56.70A3.1 3.1 0 0 0 96.34 55.41L91.89 42.65ZM88.11 42.65L83.45 56.39A3.1 3.1 0 0 0 89.52 57.68L90.85 43.24ZM87.21 41.13L75.74 49.17A3.1 3.1 0 0 0 79.89 53.78L89.08 43.21ZM87.33 39.46L73.82 39.64A3.1 3.1 0 0 0 74.69 45.78L87.72 42.23ZM88.45 38.09L77.86 30.53A3.1 3.1 0 0 0 74.95 36.01L87.14 40.56Z" fill="#FAF8F2"/></g>
 </svg>

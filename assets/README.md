@@ -4,7 +4,7 @@ README images. Each PNG is rendered from an HTML source in `src/` (design rules:
 
 | File | What it shows |
 |---|---|
-| `logo.svg` | The mark: clay tile, an L of two tokens, the last token kept. |
+| `logo.svg` | The mark (vector, sharp at any size): clay tile, rounded L and a hand-drawn spark. |
 | `install-button.svg` | Clay "Install in 30 seconds" button of the README header. |
 | `banner.png` | Top banner: logo, name, tagline, three facts and a stacked-token drawing. |
 | `highlights.png` | "Why Last Token?": four reasons in one row. |

@@ -1,1 +1,1 @@
-{"name": "last-token", "version": "1.7.0", "description": "Deterministic (no-LLM) compaction, cold-cache pruning of old tool outputs, look-up subagents on Haiku and a live plan-quota pane in last-token projects and (global mode) every session.", "types": "./types/index.d.ts"}
+{"name": "last-token", "version": "1.7.1", "description": "Deterministic (no-LLM) compaction, cold-cache pruning of old tool outputs, look-up subagents on Haiku and a live plan-quota pane in last-token projects and (global mode) every session.", "types": "./types/index.d.ts"}

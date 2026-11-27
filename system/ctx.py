@@ -19,7 +19,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-VERSION = "1.7.0"
+VERSION = "1.7.1"
 
 # ---- tunables (can be overridden with env vars of the same name) -----------------
 CTX_DIR = ".ctx"

@@ -25,7 +25,7 @@ const DEFAULTS = {
   pruneKeepTurns: 3,        // tool outputs of the newest N user prompts stay whole
   pruneMinChars: 1500,      // smaller tool outputs stay whole
   panel: false,             // developer view: open the savings pane at session start + numbers in the status line
-  statusLine: true,         // a single "✓" in the status line (the host already prefixes the plugin name)
+  statusLine: false,        // plain-text status line; off: the band above the prompt already says it
   debug: false,             // one line per event in ~/.claude/last-token/mod.log
 }
 
