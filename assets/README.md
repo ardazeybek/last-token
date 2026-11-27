@@ -37,3 +37,4 @@ Needs a Chromium (Playwright cache or system) and network for Google Fonts. Keep
 - license.png — MIT, independence note, star request (src/license.html)
 - updates.png — self-update flow (src/updates.html)
 - faq.png — short FAQ answers (src/faq.html)
+- whats-new.png — status band (green active, red new-chat line) + 1.2–1.7 levers (src/whats-new.html)

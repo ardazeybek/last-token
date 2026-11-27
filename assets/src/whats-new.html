@@ -1,0 +1,33 @@
+<!doctype html>
+<!-- whats-new.html — source of assets/whats-new.png: the status band and the newer levers (1.2–1.7) -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+  .panel { padding: 52px 56px; }
+  h1 { font-family: var(--serif); font-weight: 500; font-size: 44px; letter-spacing: -0.02em; }
+  .lede { margin-top: 10px; font-size: 19px; color: var(--ink-2); }
+  .term { margin-top: 30px; background: #1F1E1B; border-radius: 14px; padding: 22px 26px; font-family: var(--mono); font-size: 17px; line-height: 1.75; color: #C9C6BC; }
+  .term .g { color: #7FB069; font-weight: 700; } .term .gg { color: #7FB069; } .term .r { color: #E26D5A; }
+  .term .p { margin-top: 10px; border: 1px solid #3A3934; border-radius: 8px; padding: 8px 14px; color: #8A877D; }
+  .g4 { margin-top: 34px; display: grid; grid-template-columns: repeat(4, 1fr); }
+  .c { padding: 2px 26px; border-left: 1px solid var(--rule); } .c:first-child { padding-left: 0; border-left: 0; }
+  .v { font-family: var(--mono); font-size: 14px; color: var(--brand); font-weight: 600; }
+  h3 { margin-top: 8px; font-family: var(--serif); font-weight: 500; font-size: 24px; }
+  p { margin-top: 6px; font-size: 17px; line-height: 1.5; color: var(--ink-2); }
+</style></head>
+<body><div class="panel" id="cv">
+  <h1>It tells you when to start fresh</h1>
+  <p class="lede">A live line above your prompt: green while Last Token saves, red when a new chat would be cheaper.</p>
+  <div class="term">
+    <div><span class="g">Last Token Active</span><span class="gg">  −68% quota</span></div>
+    <div class="r">This chat is long. Starting a new chat for your next task uses about 47% less quota per message.</div>
+    <div class="p">&gt; _</div>
+  </div>
+  <div class="g4">
+    <div class="c"><div class="v">NEW-CHAT HINT</div><h3>Knows the right moment</h3><p>Compares this chat with a fresh one and warns you only when switching pays off.</p></div>
+    <div class="c"><div class="v">COLD DIGEST</div><h3>Back from a break</h3><p>After an hour away, Claude gets a short digest instead of re-reading the whole chat.</p></div>
+    <div class="c"><div class="v">CODE MAP</div><h3>Finds code, not files</h3><p>Jumps straight to a function instead of reading big files from top to bottom.</p></div>
+    <div class="c"><div class="v">TERSE MODE</div><h3>Says less, does the same</h3><p>No preambles or recaps. Output is the priciest token you pay for.</p></div>
+  </div>
+</div>
+<script src="fit.js"></script>
+</body></html>

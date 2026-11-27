@@ -48,6 +48,9 @@ they saved almost nothing (they only cut cache *reads*, ~1/30 of a cache write).
    (main + subagents) and early compaction saved, prompt-cache re-writes by cause (`ctx.py` `cache_report`)
    and the outputs cold pruning dropped, from `ctx.py panel` (`quota_report`). Haiku weights are
    measured; other models are scaled by API price (marked as estimate). Refreshed on `turn.complete`, no timer.
+   Band above the prompt (all users): green "Last Token Active −N% quota" (`quota_pct`, vs. no system) and,
+   when `new_chat_hint` says a fresh chat is cheaper, a red line telling the user to start a new chat for
+   the next task. Status line: plain `Active −N%` (it cannot draw colours).
 7. Where it acts — a project with `.ctx/`, or (global mode, `~/.claude/last-token/global.json`)
    any folder, using its store `~/.claude/last-token/store/<slug>/.ctx`. Elsewhere the mod stays
    silent, so the pane showing up means last-token works in this session. The desktop's placeholder

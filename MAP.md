@@ -12,7 +12,9 @@
 ## Main flow (installed project)
 1. `install.sh <project>` → `ctx.py init`: creates `.ctx/`, protocol block in CLAUDE.md,
    merges `.claude/settings.json` (PreCompact + PreToolUse hooks; trigger only with --window/--pct).
-2. During work the agent calls `ctx.py rule|decide|note|recall` (protocol in CLAUDE.md).
+2. During work the agent calls `ctx.py rule|decide|note|recall` (protocol in CLAUDE.md) and the code map
+   `show|where|uses|outline|map` (stdlib index `.ctx/codemap.json`, lazy mtime refresh, `git ls-files` when a repo,
+   brace-matched ranges; guard deny carries the file's outline + points at `show`).
 3. `PreToolUse(Read|Bash)` → `ctx.py hook-guard` denies whole reads of big files (Bash output clip was
    removed in 0.8: rounds 6-7 failed). `ctx.py audit` = fixed-base breakdown from the newest transcript + skill-listing levers.
 4. Context reaches PCT % of the window → native auto-compaction → `PreCompact` →
@@ -25,6 +27,9 @@
    `tool.call(Agent)`: look-up subagents (`cheapAgents`) get `model: haiku` (`exploreModel`, "" = off). Lean base levers removed in 0.8.
    `http.fetch` (engine model requests): cold-cache pruning — first request after a gap > cache TTL stubs old
    big tool outputs; stub ids in `$.store` per conversation, re-applied to every request (stable cached prefix).
+   `coldDigest` (1.5.0): after a cold gap with ≥80K chars of history, the request carries the ctx.py digest + the new
+   prompt only (UI keeps everything); the cut is stored per conversation and re-applied while warm.
+   Band above the prompt (1.7.0): green `Last Token Active −N% quota`, red new-chat line when the context is ≥1.6× and ≥50K above a fresh chat (`new_chat_hint`); status line = plain `Active −N%`.
    `ui.render` folds only our digest rows (DIGEST_HEAD + `.ctx/archive/`). Paused session → native.
 7. Savings: `turn.complete` → `ctx.py panel --session` → `savings()` (native-only counterfactual) +
    `quota_report()` (QUOTA_W × MODEL_MUL, main + subagents) → `$.state` → "Quota savings" pane + status line (`/lt-savings`).
@@ -42,7 +47,7 @@
    Release asset `install-last-token.md` must be attached to every GitHub release (README button = releases/latest).
 
 ## Benchmark flow
-`bench/run.py --cond a..m` (k = c+mod, m = c+mod+effort low; e–j, l experiments; `bench/resume.sh` waits out rate limits) → fresh fixture (`fixture.py`) → 32 × `claude -p` (resume) →
+`bench/run.py --cond a..n [--system <old>/system]` (version vs version since r22; `bench/usage.py` = real-use numbers from all transcripts) (k = c+mod, m = c+mod+effort low, n = k+code map; e–j, l experiments; `bench/resume.sh` waits out rate limits) → fresh fixture (`fixture.py`) → 32 × `claude -p` (resume) →
 `state.json` + transcripts → `bench/score.py` → `results/*.json` → `score.py --table`.
 
 ## Pitfalls

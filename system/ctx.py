@@ -2,7 +2,8 @@
 """last-token: small core + disk archive + early native compaction for Claude Code.
 
 Single stdlib-only script. Installed into a project as .ctx/ctx.py.
-Commands (agent/user): init, rule, decide, note, recall, check, status, audit, pause, resume, trigger
+Commands (agent/user): init, rule, decide, note, recall, check, status, audit, pause, resume, trigger,
+                       code map: show, where, uses, outline, map
 Commands (hooks):      hook-precompact, hook-guard, hook-session, compact-summary (mod)
 """
 from __future__ import annotations
@@ -18,7 +19,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-VERSION = "1.1.0"
+VERSION = "1.7.0"
 
 # ---- tunables (can be overridden with env vars of the same name) -----------------
 CTX_DIR = ".ctx"
@@ -522,7 +523,9 @@ def iso_ts(s: str) -> float:
 def main_calls(tp: Path) -> list[dict]:
     """Main-thread API calls in order: time, model, token parts, cache TTL, and whether a compaction came before."""
     calls, seen, after_compact = [], set(), False
-    for line in tp.open(errors="replace"):
+    with tp.open(errors="replace") as fh:
+        lines = list(fh)
+    for line in lines:
         if '"usage"' not in line and "compact_boundary" not in line:
             continue
         try:
@@ -1252,6 +1255,14 @@ def deny(reason: str) -> int:
     return 0
 
 
+def guard_cmd(cwd: str | None) -> str:
+    """How the agent calls ctx.py from the hook's folder (project copy, else the global one)."""
+    proj = find_project(Path(cwd or os.getcwd()))
+    if proj and not is_store(proj):
+        return "python3 .ctx/ctx.py" if Path(cwd or os.getcwd()).resolve() == proj else f"python3 {shlex.quote(str(proj / CTX_DIR / 'ctx.py'))}"
+    return f"python3 {shlex.quote(str(LT_HOME / 'ctx.py'))} --at {shlex.quote(str(cwd or os.getcwd()))}"
+
+
 def hook_guard(args: list[str]) -> int:
     """PreToolUse hook: refuse whole-file reads of big files, suggest slices or a subagent."""
     if os.environ.get("CTX_GUARD") == "off":
@@ -1277,10 +1288,396 @@ def hook_guard(args: list[str]) -> int:
     if not info:
         return 0
     lines, size = info
-    return deny(f"last-token: {target} is big ({lines} lines, {size // 1024} KB, ~{size // 4000}k tokens). "
-                f"Reading it whole bloats the context for every later call. Instead: `grep -n '<pattern>' {target}` "
+    outline, inline = "", ""
+    if os.environ.get("CTX_CODEMAP") != "off" and os.path.splitext(path)[1].lower() in CODE_EXT:
+        outline = f"`{guard_cmd(data.get('cwd'))} show <name>` (one function's code) or "
+        if os.environ.get("CTX_GUARD_OUTLINE") != "off":
+            inline = guard_outline(Path(path))
+    return deny(inline + f"last-token: {target} is big ({lines} lines, {size // 1024} KB, ~{size // 4000}k tokens). "
+                f"Reading it whole bloats the context for every later call. Instead: {outline}`grep -n '<pattern>' {target}` "
                 f"then Read with offset AND limit (limit ≤{GUARD_LINES})" + ("." if os.environ.get("CTX_NO_AGENT") == "1" else
                 ", or delegate to a subagent (Task, subagent_type Explore) and ask it for ≤15 lines with file:line refs."))
+
+
+def guard_outline(p: Path, cap: int = 60) -> str:
+    """Outline of a denied code file for the deny message itself (saves the extra `outline` call)."""
+    try:
+        e = file_entry(p)
+    except (OSError, ValueError):
+        return ""
+    if not e["syms"]:
+        return ""
+    rows = [f"{a}-{b} {name}" for name, _k, a, b, _s in e["syms"][:cap]]
+    more = f" … +{len(e['syms']) - cap} (outline)" if len(e["syms"]) > cap else ""
+    return (f"Outline of {p.name} (start-end name; Read offset=start limit=end-start+1):\n"
+            + "\n".join(rows) + more + "\n\n")
+
+
+# ---- code map: symbols with line ranges, so the agent reads slices, not files (idea: graphify) ----
+CODE_EXT = {".py", ".pyi", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs", ".java", ".kt", ".c",
+            ".h", ".cc", ".cpp", ".hpp", ".cs", ".rb", ".php", ".sh", ".bash", ".swift", ".lua", ".qml", ".dart"}
+CODE_SKIP = {".git", "node_modules", ".venv", "venv", "env", "__pycache__", "dist", "build", "target", ".ctx",
+             ".next", "vendor", ".mypy_cache", ".pytest_cache", ".tox", "site-packages", ".cache", "coverage"}
+CODE_MAX_FILES, CODE_MAX_BYTES = 4000, 1_000_000
+CODEMAP_V = 2
+SYM_RE = [  # (regex on a stripped line, kind) for non-Python files; group 1 = name
+    (re.compile(r"(?:export\s+)?(?:default\s+)?(?:async\s+)?function\*?\s+([A-Za-z_$][\w$]*)"), "func"),
+    (re.compile(r"(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)"), "class"),
+    (re.compile(r"(?:export\s+)?(?:interface|type|enum|struct|trait|protocol)\s+([A-Za-z_$][\w$]*)"), "type"),
+    (re.compile(r"(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)(?:\s*:\s*[^=]+)?\s*=\s*(?:async\s*)?"
+                r"(?:<[^>]*>\s*)?(?:\([^)]*\)(?:\s*:\s*[^=]+)?|[\w$]+)\s*=>"), "func"),
+    (re.compile(r"(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s+)?function\b"), "func"),
+    (re.compile(r"func\s+(?:\([^)]*\)\s*)?([A-Za-z_]\w*)"), "func"),
+    (re.compile(r"(?:pub(?:\([^)]*\))?\s+)?(?:async\s+)?fn\s+([A-Za-z_]\w*)"), "func"),
+    (re.compile(r"def\s+(?:self\.)?([A-Za-z_]\w*[?!]?)"), "func"),
+    (re.compile(r"(?:function\s+)?([A-Za-z_][\w-]*)\s*\(\)\s*\{"), "func"),
+    (re.compile(r"(?:public|private|protected|internal|static|final|override|virtual|async|\s)+[\w<>\[\],.? ]+\s+"
+                r"([A-Za-z_]\w*)\s*\([^;]*$"), "func"),
+]
+
+
+def code_root() -> Path:
+    """Folder whose code the map covers: the project (or, global mode, the real working folder)."""
+    real = real_folder().resolve()
+    proj = find_project(real)
+    return proj if proj and not is_store(proj) else real
+
+
+def code_files(root: Path) -> list[Path]:
+    """Code files under root: `git ls-files` when it is a repo (honours .gitignore), else a walk; capped."""
+    def keep(rel: str) -> bool:
+        parts = rel.split("/")
+        return (os.path.splitext(rel)[1].lower() in CODE_EXT
+                and not any(x in CODE_SKIP or x.startswith(".") for x in parts[:-1]))
+    if (root / ".git").exists():
+        import subprocess
+        try:
+            r = subprocess.run(["git", "-C", str(root), "ls-files", "-co", "--exclude-standard", "-z"],
+                               capture_output=True, timeout=10)
+            if r.returncode == 0:
+                rels = sorted(x for x in r.stdout.decode(errors="replace").split("\0") if x and keep(x))
+                return [root / x for x in rels[:CODE_MAX_FILES] if (root / x).is_file()]
+        except (OSError, subprocess.SubprocessError):
+            pass
+    out: list[Path] = []
+    for dirpath, dirs, files in os.walk(root):
+        dirs[:] = sorted(d for d in dirs if d not in CODE_SKIP and not d.startswith("."))
+        for f in sorted(files):
+            if os.path.splitext(f)[1].lower() in CODE_EXT:
+                out.append(Path(dirpath) / f)
+                if len(out) >= CODE_MAX_FILES:
+                    return out
+    return out
+
+
+def py_symbols(text: str) -> tuple[list, list]:
+    """Python: (symbols [name, kind, start, end, signature], imported modules) from the AST."""
+    import ast
+    tree = ast.parse(text)
+    lines = text.splitlines()
+    syms: list = []
+    imps: list = []
+
+    # walk defs, naming methods Class.method
+    def visit(node, prefix: str) -> None:
+        for n in ast.iter_child_nodes(node):
+            if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                kind = "class" if isinstance(n, ast.ClassDef) else ("method" if prefix else "func")
+                start = min([n.lineno] + [d.lineno for d in n.decorator_list])
+                sig = lines[n.lineno - 1].strip()[:110] if n.lineno <= len(lines) else ""
+                syms.append([prefix + n.name, kind, start, getattr(n, "end_lineno", n.lineno) or n.lineno, sig])
+                if isinstance(n, ast.ClassDef):
+                    visit(n, prefix + n.name + ".")
+            elif isinstance(n, ast.Import):
+                imps.extend(a.name for a in n.names)
+            elif isinstance(n, ast.ImportFrom) and n.module:
+                imps.append("." * n.level + n.module)
+    visit(tree, "")
+    return syms, sorted(set(imps))
+
+
+BRACE_EXT = {".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs", ".java", ".kt", ".c", ".h", ".cc",
+             ".cpp", ".hpp", ".cs", ".php", ".swift", ".dart", ".qml", ".sh", ".bash"}
+METHOD_RE = re.compile(r"(?:(?:public|private|protected|internal|static|async|readonly|override|abstract|final|"
+                       r"virtual|get|set|fun|func|def|function)\s+)*\*?([A-Za-z_$][\w$]*)\s*(?:<[^>]*>)?\s*\(")
+GO_METHOD_RE = re.compile(r"func\s+\(\s*\w*\s*\*?\s*([A-Za-z_]\w*)(?:\[[^\]]*\])?\s*\)\s*([A-Za-z_]\w*)")
+STR_RE = re.compile(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|`[^`]*`')
+SYM_KW = {"if", "for", "while", "switch", "catch", "return", "else", "new", "function", "sizeof", "do", "try",
+          "super", "this", "typeof", "await", "with", "elif", "when", "match", "foreach"}
+
+
+def code_line(s: str, in_block: bool) -> tuple[str, bool]:
+    """A line without strings and comments (for brace counting); tracks /* */ across lines."""
+    out = ""
+    while s:
+        if in_block:
+            j = s.find("*/")
+            if j < 0:
+                return out, True
+            s, in_block = s[j + 2:], False
+            continue
+        s = STR_RE.sub('""', s)
+        j, k = s.find("/*"), s.find("//")
+        if k >= 0 and (j < 0 or k < j):
+            return out + s[:k], False
+        if j < 0:
+            return out + s, False
+        out, s, in_block = out + s[:j], s[j + 2:], True
+    return out, in_block
+
+
+def re_symbols(text: str, ext: str = "") -> tuple[list, list]:
+    """Other languages: (symbols, imports) by line regex. Brace languages: a symbol ends at its closing
+    brace and members of a class are named Class.method; others: a symbol ends where the next starts."""
+    syms: list = []
+    imps: list = []
+    braces = ext in BRACE_EXT
+    lines = text.splitlines()
+    depth, in_block = 0, False
+    open_: list = []        # [sym, depth at its start, opened?]
+    for i, raw in enumerate(lines, 1):
+        s = raw.strip()
+        code, in_block_next = code_line(s, in_block) if braces else (s, False)
+        start_in_block, in_block = in_block, in_block_next
+        if s and not start_in_block and not (s[0] in "/*#" and not s.startswith("#include")):
+            found = None
+            m = re.match(r"(?:import\s.*?from\s+|import\s+|require\(|#include\s+|use\s+)['\"<]?([\w@./:-]+)", s)
+            if m and (s.startswith(("import", "#include", "use ")) or "require(" in s):
+                imps.append(m.group(1))
+            else:
+                cls = open_[-1][0] if open_ and open_[-1][0][1] in ("class", "type") and depth == open_[-1][1] + 1 else None
+                gm = GO_METHOD_RE.match(s)
+                if gm:
+                    found = [gm.group(1) + "." + gm.group(2), "method", i, i, s[:110]]
+                elif cls and braces:
+                    mm = METHOD_RE.match(s)
+                    if mm and mm.group(1) not in SYM_KW and ("{" in code or code.rstrip().endswith((")", ",", "(", "=>"))):
+                        found = [cls[0] + "." + mm.group(1), "method", i, i, s[:110]]
+                if not found:
+                    for rx, kind in SYM_RE:
+                        m = rx.match(s)
+                        if m and m.group(1) not in SYM_KW:
+                            found = [(cls[0] + "." if cls and kind == "func" else "") + m.group(1),
+                                     "method" if cls and kind == "func" else kind, i, i, s[:110]]
+                            break
+            if found:
+                syms.append(found)
+                if braces:
+                    open_.append([found, depth, False])
+        if braces:
+            depth += code.count("{") - code.count("}")
+            while open_:  # close symbols whose block ended (or that never opened one)
+                sym, d, opened = open_[-1]
+                if depth > d:
+                    open_[-1][2] = True
+                    break
+                if opened or code.rstrip().endswith((";", "}")) or sym[2] < i - 3 or depth < d:
+                    sym[3] = i
+                    open_.pop()
+                    continue
+                break
+    if braces:
+        for sym, _d, _o in open_:
+            sym[3] = len(lines)
+    else:
+        for j, sym in enumerate(syms):  # end = line before the next symbol (rough but enough for offset/limit)
+            sym[3] = (syms[j + 1][2] - 1) if j + 1 < len(syms) else len(lines)
+    return syms, sorted(set(imps))[:40]
+
+
+def file_entry(p: Path) -> dict:
+    """Index entry of one file: mtime, size, line count, symbols, imports."""
+    st = p.stat()
+    e = {"m": st.st_mtime, "s": st.st_size, "n": 0, "syms": [], "imp": []}
+    if st.st_size > CODE_MAX_BYTES:
+        return e
+    text = p.read_text(errors="replace")
+    e["n"] = text.count("\n") + (0 if text.endswith("\n") or not text else 1)
+    try:
+        ext = p.suffix.lower()
+        e["syms"], e["imp"] = py_symbols(text) if ext in (".py", ".pyi") else re_symbols(text, ext)
+    except (SyntaxError, ValueError, RecursionError):
+        e["syms"], e["imp"] = re_symbols(text)
+    return e
+
+
+def code_index(root: Path | None = None) -> tuple[Path, dict]:
+    """Load the code map and refresh only files whose mtime/size changed (no watcher: CPU 0 when idle)."""
+    root = root or code_root()
+    f = ctx_dir(resolve_root(root)) / "codemap.json"
+    try:
+        old = json.loads(f.read_text())
+        old = old if old.get("v") == CODEMAP_V and old.get("root") == str(root) else {}
+    except (OSError, ValueError):
+        old = {}
+    prev = old.get("files", {})
+    files: dict = {}
+    changed = False
+    for p in code_files(root):
+        rel = p.relative_to(root).as_posix()
+        try:
+            st = p.stat()
+            e = prev.get(rel)
+            if not e or e["m"] != st.st_mtime or e["s"] != st.st_size:
+                e, changed = file_entry(p), True
+            files[rel] = e
+        except OSError:
+            continue
+    if changed or set(files) != set(prev):
+        try:
+            f.write_text(json.dumps({"v": CODEMAP_V, "root": str(root), "files": files}, separators=(",", ":")))
+        except OSError:
+            pass
+    return root, files
+
+
+def code_rel(root: Path, target: str) -> str:
+    """A user-given path as the index key (relative to the code root)."""
+    p = Path(target)
+    p = p if p.is_absolute() else Path.cwd() / p
+    try:
+        return p.resolve().relative_to(root).as_posix()
+    except ValueError:
+        return target
+
+
+def cmd_outline(args: list[str]) -> int:
+    """outline <file>: its symbols with line ranges (Read offset=start limit=end-start+1)."""
+    if not args:
+        print("usage: ctx.py outline <file>")
+        return 2
+    root, files = code_index()
+    rel = code_rel(root, args[0])
+    e = files.get(rel)
+    if e is None:
+        p = Path(args[0])
+        if not p.is_file():
+            print(f"not found: {args[0]}")
+            return 1
+        e = file_entry(p)
+    print(f"{rel} · {e['n']} lines · {len(e['syms'])} symbols" + (f" · imports: {', '.join(e['imp'][:12])}" if e["imp"] else ""))
+    for name, kind, a, b, sig in e["syms"][:150]:
+        print(f"  {a}-{b} {kind} {name}: {sig}")
+    if len(e["syms"]) > 150:
+        print(f"  … {len(e['syms']) - 150} more (grep -n)")
+    return 0
+
+
+def cmd_where(args: list[str]) -> int:
+    """where <name>: where a function/class/method is defined (exact, then Class.name, then substring)."""
+    if not args:
+        print("usage: ctx.py where <name>")
+        return 2
+    q = args[0]
+    root, files = code_index()
+    rows = [(rel, s) for rel, e in files.items() for s in e["syms"]]
+    hits = [r for r in rows if r[1][0] == q or r[1][0].endswith("." + q)]
+    if not hits:
+        hits = [r for r in rows if q.lower() in r[1][0].lower()]
+    for rel, (name, kind, a, b, sig) in hits[:25]:
+        print(f"{rel}:{a}-{b} {kind} {name}: {sig}")
+    if len(hits) > 25:
+        print(f"… {len(hits) - 25} more; be more specific")
+    if not hits:
+        print(f"no symbol '{q}' in {len(files)} code files (try grep -rn)")
+    return 0 if hits else 1
+
+
+SHOW_LINES = 150
+
+
+def cmd_show(args: list[str]) -> int:
+    """show <name>: the code of a function/class/method, numbered (one call instead of where + Read)."""
+    if not args:
+        print("usage: ctx.py show <name>")
+        return 2
+    q = args[0]
+    root, files = code_index()
+    rows = [(rel, s) for rel, e in files.items() for s in e["syms"]]
+    hits = [x for x in rows if x[1][0] == q] or [x for x in rows if x[1][0].endswith("." + q)]
+    if not hits:
+        print(f"no symbol '{q}' (try `where {q}` for partial names)")
+        return 1
+    if len(hits) > 1:
+        print(f"{len(hits)} symbols named '{q}' — showing the first; others:")
+        for rel, (name, kind, a, b, _s) in hits[1:8]:
+            print(f"  {rel}:{a}-{b} {kind} {name}")
+    rel, (name, kind, a, b, _s) = hits[0]
+    try:
+        text = (root / rel).read_text(errors="replace").splitlines()
+    except OSError:
+        print(f"cannot read {rel}")
+        return 1
+    end = min(b, a + SHOW_LINES - 1)
+    print(f"{rel}:{a}-{b} {kind} {name}")
+    for i in range(a, end + 1):
+        print(f"{i:>5}\t{text[i - 1] if i <= len(text) else ''}")
+    if end < b:
+        print(f"… {b - end} more lines: Read {rel} offset={end + 1} limit={b - end}")
+    return 0
+
+
+def enclosing(syms: list, line: int) -> str:
+    """Innermost symbol whose range holds line ('' at module level)."""
+    best = ""
+    for name, _k, a, b, _s in syms:
+        if a <= line <= b:
+            best = name
+    return best
+
+
+def cmd_uses(args: list[str]) -> int:
+    """uses <name>: lines that use a name (definitions left out), each with its enclosing function."""
+    if not args:
+        print("usage: ctx.py uses <name>")
+        return 2
+    q = args[0].split(".")[-1]
+    rx = re.compile(r"(?<![\w$])" + re.escape(q) + r"(?![\w$])")
+    root, files = code_index()
+    hits: list[str] = []
+    total = 0
+    for rel, e in files.items():
+        if e["s"] > CODE_MAX_BYTES or not _has_word(root / rel, q):
+            continue
+        defs = {s[2] for s in e["syms"] if s[0].split(".")[-1] == q}
+        try:
+            text = (root / rel).read_text(errors="replace").splitlines()
+        except OSError:
+            continue
+        for i, line in enumerate(text, 1):
+            if i in defs or not rx.search(line):
+                continue
+            total += 1
+            if len(hits) < 30:
+                where = enclosing(e["syms"], i)
+                hits.append(f"{rel}:{i}" + (f" [{where}]" if where else "") + f": {line.strip()[:100]}")
+    print("\n".join(hits) if hits else f"no use of '{q}' found")
+    if total > len(hits):
+        print(f"… {total - len(hits)} more")
+    return 0 if hits else 1
+
+
+def _has_word(p: Path, q: str) -> bool:
+    """Cheap byte test before the line scan."""
+    try:
+        return q.encode() in p.read_bytes()
+    except OSError:
+        return False
+
+
+def cmd_map(args: list[str]) -> int:
+    """map [dir]: one line per code file: lines, top-level symbols and local imports (≤ 80 lines)."""
+    root, files = code_index()
+    sub = code_rel(root, args[0]) if args else ""
+    rows = [(rel, e) for rel, e in files.items() if rel.startswith(sub.rstrip("/") + "/" if sub and sub != "." else "")]
+    print(f"{root.name}: {len(rows)} code files, {sum(e['n'] for _, e in rows)} lines")
+    for rel, e in rows[:80]:
+        top = [s[0] for s in e["syms"] if "." not in s[0]]
+        names = ", ".join(top[:8]) + (f" +{len(top) - 8}" if len(top) > 8 else "")
+        print(f"{rel} ({e['n']}): {names}")
+    if len(rows) > 80:
+        print(f"… {len(rows) - 80} more files: `map <subdir>`")
+    return 0
 
 
 # ---- audit: what the fixed base of every request is made of ---------------------------
@@ -1392,7 +1789,9 @@ Context is kept small on purpose: older details are archived to disk, not lost.
 2. Subtask finished → `python3 .ctx/ctx.py note "<title>" "<one line with key values>" <<'EOF'` + details (decisions, file paths, open issues) + `EOF`.
 3. Need a detail you no longer see (earlier decision, finding, value) → check Rules/Decisions/Index below, then `python3 .ctx/ctx.py recall <keyword>` and read only the hit (Read offset/limit). Use it; do not paste it back.
 4. Big inputs: never read a whole big file; `grep -n` then Read with offset/limit.{delegate}
+   Find code without reading files: `python3 .ctx/ctx.py show <name>` (its code, numbered), `where <name>` (definition file:lines), `uses <name>` (callers), `outline <file>`, `map`.
 5. Keep command output short (`-q`, `| tail -n 30`).
+6. Write tersely: no preamble, no restating the plan or tool output, no closing recap; batch independent tool calls in one message.
 ### Rules
 @.ctx/RULES.md
 ### Decisions (latest wins)
@@ -1658,7 +2057,9 @@ Context is kept small on purpose: older details are archived to disk, not lost. 
 3. Need a detail you no longer see → check Rules/Decisions/Index below, then `LT recall <keyword>`
    and read only the hit (Read offset/limit).
 4. Never read a whole big file: `grep -n`, then Read with offset/limit.
+   Find code without reading files: `LT show <name>` (its code, numbered), `where <name>` (definition file:lines), `uses <name>` (callers), `outline <file>`, `map`.
 5. Keep command output short (`-q`, `| tail -n 30`).
+6. Write tersely: no preamble, no restating the plan or tool output, no closing recap; batch independent tool calls in one message.
 ### Rules
 {rules}
 ### Decisions (latest wins)
@@ -2153,6 +2554,20 @@ def fmt_tok(n: int) -> str:
     return f"{n / 1e6:.1f}M" if n >= 1e6 else f"{round(n / 1e3)}K" if n >= 1e3 else str(n)
 
 
+NEW_CHAT_MIN_EXTRA = 50_000   # context above the fresh-chat size before suggesting a new chat
+NEW_CHAT_MIN_RATIO = 1.6      # ...and at least this many times the fresh-chat size
+
+
+def new_chat_hint(tp: Path | None) -> dict:
+    """How much cheaper each request of a new chat would be: {ctx, base, pct}; pct 0 = keep going here."""
+    reqs = session_requests(tp)[0] if tp and tp.exists() else []
+    if not reqs:
+        return {"ctx": 0, "base": 0, "pct": 0}
+    base, ctx = reqs[0][1], reqs[-1][1]
+    big = base > 0 and ctx - base >= NEW_CHAT_MIN_EXTRA and ctx >= NEW_CHAT_MIN_RATIO * base
+    return {"ctx": ctx, "base": base, "pct": round(100 * (1 - base / ctx)) if big else 0}
+
+
 def cmd_panel(args: list[str]) -> int:
     """panel --session ID [--at DIR]: JSON for the mod's pane (savings + health)."""
     sid = args[args.index("--session") + 1] if "--session" in args[:-1] else ""
@@ -2167,14 +2582,15 @@ def cmd_panel(args: list[str]) -> int:
     q = quota_report(tp, sv) if sv else {"quota": 0, "quota_sub": 0, "quota_saved": 0, "quota_pct": 0, "model": "", "measured": True}
     sv = {k: v for k, v in sv.items() if not k.startswith("_")} or {"requests": 0, "sent": 0, "saved": 0, "compactions": 0,
                                                                    "deterministic": 0, "context": 0, "pct": 0}
-    out = {**sv, **q, "cache": cache, **health(real, tp)}
+    out = {**sv, **q, "cache": cache, "new_chat": new_chat_hint(tp), **health(real, tp)}
     print(json.dumps(out, ensure_ascii=False))
     return 0
 
 
 COMMANDS = {"init": cmd_init, "note": cmd_note, "decide": cmd_decide, "rule": cmd_rule,
             "recall": cmd_recall, "pause": cmd_pause, "resume": lambda a: cmd_pause(a, on=False), "trigger": cmd_trigger, "check": cmd_check, "doctor": cmd_doctor, "status": cmd_status, "audit": cmd_audit,
-            "savings": cmd_savings, "panel": cmd_panel, "tune": cmd_tune, "self-update": cmd_self_update, "global": cmd_global, "hook-session": hook_session, "compact-summary": cmd_compact_summary, "mod": cmd_mod, "hook-precompact": hook_precompact, "hook-guard": hook_guard}
+            "savings": cmd_savings, "panel": cmd_panel, "tune": cmd_tune, "self-update": cmd_self_update, "global": cmd_global, "hook-session": hook_session, "compact-summary": cmd_compact_summary, "mod": cmd_mod, "hook-precompact": hook_precompact, "hook-guard": hook_guard,
+            "outline": cmd_outline, "show": cmd_show, "where": cmd_where, "uses": cmd_uses, "map": cmd_map}
 
 
 def main(argv: list[str]) -> int:

@@ -1,6 +1,6 @@
 // Checks cold-cache pruning: stubs picked only after a cold gap, kept stable afterwards, recent turns whole.
 import { test, expect } from 'claude-code/testing'
-import { pruneBody, cacheLines, pruneQuota } from './register'
+import { pruneBody, cacheLines, pruneQuota, applyCut, lastPrompt, hash } from './register'
 
 const C = { coldSeconds: 3630, pruneKeepTurns: 1, pruneMinChars: 100 }
 const big = 'x'.repeat(2000)
@@ -47,4 +47,23 @@ test('pane rows: cache re-writes by cause, and the prune quota by model', () => 
   expect(cacheLines({ cache: { busts: {}, idle_compactions: 0 } } as any)[0].text).toContain('No cache busts')
   expect(Math.round(pruneQuota(100000, 'claude-opus-5-5') * 100)).toBe(230)
   expect(Math.round(pruneQuota(100000, 'claude-haiku-5-5') * 100)).toBe(46)
+})
+
+// Cold digest: history before the newest prompt becomes one digest block; a changed prompt drops the cut.
+test('applyCut keeps the prompt behind the digest and refuses a changed history', () => {
+  const m = conv().messages.slice(0, 5)
+  const n = lastPrompt(m)
+  expect(n).toBe(4)
+  const cut = { n, head: hash(JSON.stringify(m[n].content)), digest: '[last-token compaction: d' }
+  const out: any = applyCut(m, cut)
+  expect(out.length).toBe(1)
+  expect(out[0].content[0].text).toBe('[last-token compaction: d')
+  expect(out[0].content[1].text).toBe('yeni istek')
+  const later = [...m, { role: 'assistant', content: [{ type: 'text', text: 'ok' }] }, { role: 'user', content: 'sonra' }]
+  expect((applyCut(later, cut) as any).length).toBe(3)
+  expect(applyCut(m.slice(0, 3), cut)).toBe(null)
+})
+
+test('lastPrompt is -1 while a tool result is pending', () => {
+  expect(lastPrompt(conv().messages.slice(0, 3))).toBe(-1)
 })

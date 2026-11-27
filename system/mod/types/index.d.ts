@@ -11,6 +11,7 @@ export type Savings = {
   quota_sub: number     // ... of it by subagents
   quota_saved: number   // quota early compaction saved, same unit
   quota_pct: number     // quota_saved / (quota_saved + quota), %
+  new_chat?: { ctx: number; base: number; pct: number }  // per-request saving of a fresh chat (0 = keep going)
   model: string         // main-thread model
   measured: boolean     // false = weights scaled from Haiku by API price (not measured)
   mode: 'project' | 'global' | 'off' // where the memory lives

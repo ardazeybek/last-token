@@ -189,6 +189,17 @@ tool takes 1.5·E* (fewer compactions, less digest loss): Opus ~184K, Sonnet ~20
 `ctx.py tune` writes `modelSettings.<model>.autoCompactWindow` for every model the user ran, so whichever
 model is picked in a chat gets its own value; global mode re-tunes once a day in the background.
 
+### 2.14 Code map (1.2.0, idea from graphify)
+graphify turns a repo into a knowledge graph (tree-sitter + networkx, ~110K lines, optional LLM pass) so an
+agent queries instead of grepping. The part that saves quota is small: knowing *where* a symbol lives and *which
+lines* it spans, so the agent reads a slice instead of a file (every read stays in the context and is re-read
+from cache on every later call, and compaction re-attaches recent reads). `ctx.py where|uses|outline|map`
+does exactly that with stdlib only: Python via `ast`, other languages by line regex, index in
+`.ctx/codemap.json`, refreshed lazily per file by mtime/size on each query (no watcher, CPU 0 when idle,
+~0.2 s on a 5K-line repo). The read guard's deny message points at `outline <file>` for code files.
+Nothing is injected per turn: the protocol carries one line, the map is only read when asked for.
+Off switch: env `CTX_CODEMAP=off` (guard hint).
+
 ## 3. What we deliberately do not do
 - No per-prompt injection (`UserPromptSubmit`) → no per-turn tokens, no cache churn.
 - No extra LLM calls, no MCP server, no database.

@@ -19,6 +19,8 @@ const DEFAULTS = {
   // context is re-written then anyway), old big tool outputs are replaced by a one-line stub, and the
   // same stubs are applied to every later request so the cached prefix stays identical. false = off.
   coldPrune: true,
+  coldDigest: true,        // after a cold gap, history before the new prompt → ctx.py digest (request only; the UI keeps it all)
+  coldDigestMinChars: 80000, // only when that history is at least this big
   coldSeconds: 3630,        // gap that counts as a cold cache (TTL 1 h + margin)
   pruneKeepTurns: 3,        // tool outputs of the newest N user prompts stay whole
   pruneMinChars: 1500,      // smaller tool outputs stay whole
@@ -35,7 +37,7 @@ const PANE_TITLE = 'Quota savings'
 const pruned = atom({ plugin: 'last-token', key: 'pruned' } as const, { outputs: 0, tokens: 0 })
 
 // FNV-1a hash of a string, as 8 hex digits (conversation key for the pruning store).
-function hash(text: string): string {
+export function hash(text: string): string {
   let h = 0x811c9dc5
   for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0 }
   return h.toString(16).padStart(8, '0')
@@ -60,7 +62,39 @@ function keepFrom(msgs: any[], keepTurns: number): number {
   return 0
 }
 
-type PruneState = { t: number; ids: string[] }
+type ColdCut = { n: number; head: string; digest: string }
+type PruneState = { t: number; ids: string[]; cut?: ColdCut }
+
+// True when the gap since the last request means the prompt cache has expired.
+function isCold(st: PruneState, now: number, coldSeconds: number): boolean {
+  return !!st.t && now - st.t > coldSeconds * 1000
+}
+
+// Index of the newest user message that is a typed prompt (no tool results), or -1.
+export function lastPrompt(msgs: any[]): number {
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    const m = msgs[i]
+    if (m?.role !== 'user') continue
+    const blocks = Array.isArray(m.content) ? m.content : []
+    return blocks.some((b: any) => b?.type === 'tool_result') ? -1 : i
+  }
+  return -1
+}
+
+// Messages before index n replaced by one digest text block in front of message n; null = the cut no longer fits.
+export function applyCut(msgs: any[], cut: ColdCut): any[] | null {
+  const m = msgs[cut.n]
+  if (!m || m.role !== 'user' || hash(JSON.stringify(m.content)) !== cut.head) return null
+  const blocks = typeof m.content === 'string' ? [{ type: 'text', text: m.content }] : m.content
+  return [{ ...m, content: [{ type: 'text', text: cut.digest }, ...blocks] }, ...msgs.slice(cut.n + 1)]
+}
+
+// Characters of message content before index n (a cheap size estimate).
+function charsBefore(msgs: any[], n: number): number {
+  let s = 0
+  for (let i = 0; i < n; i++) s += JSON.stringify(msgs[i]?.content ?? '').length
+  return s
+}
 const PRUNE_KEYS = 'prune:index'  // conversation keys, oldest first (bounded)
 const PRUNE_MAX_CONVS = 150
 
@@ -233,9 +267,9 @@ async function refresh($: any, c: Config): Promise<void> {
     await openPaneOnce($, c)
     if (c.statusLine) {
       const warn = (s.checks ?? []).some(k => !k.ok) ? ' ⚠' : ''
-      const q = s.quota_saved ?? 0
-      // The host prints the plugin name in front, so the text is only the mark (numbers in developer view).
-      $.ui.status(`✓${warn}${c.panel && q > 0.005 ? ` −${fmtQuota(q)} quota pts (${s.quota_pct}%)` : ''}`)
+      const pct = s.quota_pct ?? 0
+      // Plain-text fallback (the status line has no colors); the coloured line is the AbovePrompt band.
+      $.ui.status(`Active${warn}${pct > 0 ? ` −${pct}%` : ''}${s.new_chat?.pct ? ' · new chat cheaper' : ''}`)
     }
   } catch (err) { await dbg($, c, `refresh error ${String(err).slice(0, 200)}`) }
 }
@@ -317,8 +351,30 @@ export const register: Register = on => {
     if (!Array.isArray(req?.messages) || !req.messages.length) return next(e)
     const key = `prune:${hash(JSON.stringify(req.messages[0]?.content ?? '').slice(0, 4000))}`
     const st = ((await $.store.get(key)) as PruneState | undefined) ?? { t: 0, ids: [] }
-    const r = pruneBody(req, st, await $.clock.now(), c)
+    const now = await $.clock.now()
+    // Cold digest: the whole context is re-written now anyway, so re-write a digest instead of the history.
+    if (c.coldDigest && req.messages.length >= 3 && isCold(st, now, c.coldSeconds)) {
+      const n = lastPrompt(req.messages)
+      if (n > 0 && charsBefore(req.messages, n) >= c.coldDigestMinChars) {
+        const run = await runCtx($, c, ['compact-summary'], {
+          cwd: c.root, timeoutMs: 20000, env: { CTX_RECENT_CHARS: String(c.recentChars) },
+          stdin: JSON.stringify({ session_id: await $.session.id(), cwd: c.root, trigger: 'cold' }),
+        }).catch(() => null)
+        const digest = run?.exitCode === 0 ? String(run.stdout).trim() : ''
+        if (digest.startsWith(DIGEST_HEAD)) {
+          st.cut = { n, head: hash(JSON.stringify(req.messages[n].content)), digest }
+          st.ids = []
+          await dbg($, c, `cold digest ${key}: ${n} messages → ${digest.length} chars`)
+        }
+      }
+    }
+    if (st.cut) {
+      const cut = applyCut(req.messages, st.cut)
+      if (cut) req.messages = cut; else delete st.cut  // rewound before the cut or a new history
+    }
+    const r = pruneBody(req, st, now, c) ?? (st.cut ? { body: null, st: { t: now, ids: st.ids }, added: 0, tokens: 0 } : null)
     if (!r) return next(e)
+    if (st.cut) { r.st.cut = st.cut; if (!r.body) r.body = req }
     await $.store.set(key, r.st)
     if (!st.t) {  // a new conversation: remember its key, forget the oldest beyond the bound
       const keys = (((await $.store.get(PRUNE_KEYS)) as string[] | undefined) ?? []).filter(k => k !== key)
@@ -396,6 +452,21 @@ export const register: Register = on => {
       </Box>
     )
   }).catch(($, e, next) => next(e))
+
+  // Band above the prompt: green "Last Token Active −N%", red line when a fresh chat would be cheaper.
+  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+    const s = await read($, savings)
+    if (!s || (e as any).hasSurvey) return next(e)
+    const { Box, Text } = $.ui.resolve(e)
+    const pct = s.quota_pct ?? 0
+    const nc = s.new_chat?.pct ?? 0
+    return (
+      <Box flexDirection="column">
+        <Text><Text color="green" bold>Last Token Active</Text>{pct > 0 ? <Text color="green">{`  −${pct}% quota`}</Text> : null}</Text>
+        {nc > 0 ? <Text color="red">{`This chat is long. Starting a new chat for your next task uses about ${nc}% less quota per message.`}</Text> : null}
+      </Box>
+    )
+  })
 
   // The pane is the "last-token works here" sign: it opens only where last-token is active.
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {

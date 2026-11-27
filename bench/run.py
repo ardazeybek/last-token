@@ -74,8 +74,9 @@ def compactions(tp: Path) -> list[dict]:
     return out
 
 
-MOD_DIR = HERE.parent / "system" / "mod"
-MOD_CONDS = "klm"  # conditions that load the last-token mod
+SYSTEM = HERE.parent / "system"  # --system: another version's system/ (ctx.py + mod), e.g. a git worktree
+MOD_DIR = SYSTEM / "mod"
+MOD_CONDS = "klmn"  # conditions that load the last-token mod
 
 
 EFFORT = ""  # --effort for every turn of every condition (same for a and k: fair quality comparison)
@@ -87,7 +88,7 @@ def claude_cmd(model: str, prompt: str, sid: str, resume: bool, cond: str = "") 
            "--tools", TOOLS, "--permission-mode", "bypassPermissions", "--output-format", "json",
            "--autocompact", str(WINDOW)]
     if cond and cond in MOD_CONDS:
-        cmd += ["--plugin-dir", str(MOD_DIR)]
+        cmd += ["--plugin-dir", str(SYSTEM / "mod")]
     if EFFORT:
         cmd += ["--effort", EFFORT]
     return cmd + (["--resume", sid] if resume else ["--session-id", sid])
@@ -105,10 +106,10 @@ def prepare(work: Path, cond: str, pct: int) -> None:
         (work / ".claude").mkdir(exist_ok=True)
         (work / ".claude" / "settings.json").write_text(json.dumps(
             {"autoCompactWindow": WINDOW, "env": {"CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": str(pct)}}, indent=2) + "\n")
-    if cond in "cefghijklm":  # c: product; e: + rtk; f: + clip; g: + batching rule 6; h/i/j: lean base
+    if cond in "cefghijklmn":  # c: product; e: + rtk; f: + clip; g: + batching rule 6; h/i/j: lean base
         lean = {"h": ["--skill-cap", "100"], "i": ["--skill-cap", "100", "--no-agent"],
                 "j": ["--skill-cap", "100", "--effort", "low"], "m": ["--effort", "low"]}.get(cond, [])
-        subprocess.run([sys.executable, str(HERE.parent / "system" / "ctx.py"), "init", str(work), "--pct", str(pct),
+        subprocess.run([sys.executable, str(SYSTEM / "ctx.py"), "init", str(work), "--pct", str(pct),
                         "--base", "12000", *lean], check=True, stdout=subprocess.DEVNULL)
         sf = work / ".claude" / "settings.json"
         s = json.loads(sf.read_text())
@@ -119,6 +120,10 @@ def prepare(work: Path, cond: str, pct: int) -> None:
         s["env"]["CTX_CLIP"] = "on" if cond == "f" else "off"
         if cond in MOD_CONDS:  # deterministic compaction: floor is low, so the trigger may go below safe_pct
             s["env"]["CLAUDE_AUTOCOMPACT_PCT_OVERRIDE"] = str(pct)
+        if cond != "n":  # code map (1.2) only in n, so older conditions stay what their rounds measured
+            md = work / "CLAUDE.md"
+            md.write_text("\n".join(x for x in md.read_text().split("\n") if "Find code without reading files" not in x))
+            s["env"]["CTX_CODEMAP"] = "off"
         if cond == "g":
             md = work / "CLAUDE.md"
             md.write_text(md.read_text().replace("5. Keep command output short (`-q`, `| tail -n 30`).",
@@ -228,17 +233,24 @@ def leaking_memory(run_dir: Path) -> list[Path]:
 def main() -> int:
     """Run all requested steps of one condition and save per-step records."""
     ap = argparse.ArgumentParser()
-    ap.add_argument("--cond", choices="abcdefghijklm", required=True)
+    ap.add_argument("--cond", choices="abcdefghijklmn", required=True)
     ap.add_argument("--dir", required=True)
     ap.add_argument("--model", default="haiku")
     ap.add_argument("--modjson", default="", help="JSON written to .ctx/mod.json (mod conditions), e.g. '{\"compact\":\"digest\"}'")
     ap.add_argument("--effort", default="", help="effort level passed to every turn (low..max)")
+    ap.add_argument("--system", default="", help="system/ folder of the version to test (default: this repo), "
+                    "e.g. /var/tmp/lt-prev/system for the previous release")
+    ap.add_argument("--env", action="append", default=[], help="KEY=VAL added to the project settings env (ablation)")
+    ap.add_argument("--noshow", action="store_true", help="drop `show` from the protocol line (ablation of 1.3)")
     ap.add_argument("--steps", default=f"1-{len(STEPS)}")
     ap.add_argument("--pct", type=int, default=35)
     ap.add_argument("--newchat-at", type=float, default=0.60)
     args = ap.parse_args()
-    global EFFORT
+    global EFFORT, SYSTEM
     EFFORT = args.effort
+    SYSTEM = Path(args.system).resolve() if args.system else SYSTEM
+    if not (SYSTEM / "ctx.py").is_file():
+        sys.exit(f"--system {SYSTEM}: no ctx.py there")
     run_dir = Path(args.dir).resolve()
     work = run_dir / "work"
     leaks = leaking_memory(run_dir)
@@ -250,9 +262,17 @@ def main() -> int:
     if lo == 1:
         run_dir.mkdir(parents=True, exist_ok=True)
         prepare(work, args.cond, args.pct)
+        sf = work / ".claude" / "settings.json"
+        if args.env and sf.exists():
+            s = json.loads(sf.read_text())
+            s.setdefault("env", {}).update(dict(x.split("=", 1) for x in args.env))
+            sf.write_text(json.dumps(s, indent=2) + "\n")
+        if args.noshow:
+            md = work / "CLAUDE.md"
+            md.write_text(md.read_text().replace("`python3 .ctx/ctx.py show <name>` (its code, numbered), `where", "`python3 .ctx/ctx.py where"))
         if args.modjson:
             (work / ".ctx" / "mod.json").write_text(args.modjson + "\n")
-        state = {"cond": args.cond, "model": args.model, "pct": args.pct, "effort": args.effort, "modjson": args.modjson, "sessions": [], "calls_seen": {}, "last_ctx": 0, "steps": []}
+        state = {"cond": args.cond, "model": args.model, "pct": args.pct, "effort": args.effort, "modjson": args.modjson, "system": str(SYSTEM), "env": args.env, "noshow": args.noshow, "sessions": [], "calls_seen": {}, "last_ctx": 0, "steps": []}
     else:
         state = json.loads(state_f.read_text())
         rollback(state, lo)

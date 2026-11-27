@@ -4,6 +4,7 @@ import os
 import sys
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -259,5 +260,145 @@ class GlobalMode(unittest.TestCase):
         self.assertEqual(ctx.health(self.proj, None)["mode"], "project")
 
 
+
+class CodeMap(unittest.TestCase):
+    """outline / where / uses / map over a small mixed-language project."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name).resolve() / "proj"
+        (self.root / ".ctx").mkdir(parents=True)
+        (self.root / ".ctx" / "INDEX.md").write_text("")
+        (self.root / "node_modules").mkdir()
+        (self.root / "node_modules" / "x.js").write_text("function vendored() {}\n")
+        (self.root / "app.py").write_text("import os\n\nclass Cart:\n    def total(self):\n        return 1\n\n\n"
+                                          "def checkout(c):\n    return c.total()\n")
+        (self.root / "ui.ts").write_text("import { a } from './a'\nexport function render(x: number) {\n  return x\n}\n"
+                                         "export const paint = (y) => render(y)\n")
+        (self.root / "bad.py").write_text("def broken(:\n")
+        self.env = os.environ.get("CLAUDE_PROJECT_DIR")
+        os.environ["CLAUDE_PROJECT_DIR"] = str(self.root)
+
+    def tearDown(self):
+        if self.env is None:
+            os.environ.pop("CLAUDE_PROJECT_DIR", None)
+        else:
+            os.environ["CLAUDE_PROJECT_DIR"] = self.env
+        self.tmp.cleanup()
+
+    def out(self, fn, *args):
+        """Run a command and return (code, stdout)."""
+        import contextlib
+        import io
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = fn(list(args))
+        return code, buf.getvalue()
+
+    def test_index_and_queries(self):
+        _, files = ctx.code_index()
+        self.assertEqual(set(files), {"app.py", "ui.ts", "bad.py"})                  # vendored folder skipped
+        self.assertIn("4-5 method Cart.total", self.out(ctx.cmd_outline, str(self.root / "app.py"))[1])
+        self.assertIn("ui.ts:2-4 func render", self.out(ctx.cmd_where, "render")[1])
+        self.assertIn("app.py:4-5", self.out(ctx.cmd_where, "total")[1])               # Class.method by short name
+        uses = self.out(ctx.cmd_uses, "render")[1]
+        self.assertIn("ui.ts:5 [paint]", uses)
+        self.assertNotIn("ui.ts:2", uses)                                              # definition left out
+        self.assertIn("app.py:9 [checkout]", self.out(ctx.cmd_uses, "Cart.total")[1])
+        self.assertIn("ui.ts (5): render, paint", self.out(ctx.cmd_map)[1])
+        self.assertEqual(self.out(ctx.cmd_where, "nothing_here")[0], 1)
+
+    def test_incremental_refresh(self):
+        ctx.code_index()
+        (self.root / "app.py").write_text("def fresh():\n    pass\n")
+        os.utime(self.root / "app.py", (1, 1))
+        _, files = ctx.code_index()
+        self.assertEqual([s[0] for s in files["app.py"]["syms"]], ["fresh"])
+        (self.root / "ui.ts").unlink()
+        self.assertNotIn("ui.ts", ctx.code_index()[1])
+
+    def test_brace_languages(self):
+        (self.root / "store.ts").write_text(
+            "/* class Fake { } */\nexport class Store<T> {\n  items: T[] = []\n  constructor(a: number) {\n    this.a = a\n  }\n"
+            "  async load(id: string): Promise<T> {\n    if (id) { return x }\n    return \"}\"\n  }\n}\n"
+            "export const paint = async (y: number): Promise<void> => {\n  y\n}\nexport type Id = string;\n")
+        (self.root / "m.go").write_text("package m\ntype Srv struct {\n  a int\n}\nfunc (s *Srv) Run() error {\n"
+                                        "  if true {\n    return nil\n  }\n  return nil\n}\n")
+        _, files = ctx.code_index()
+        got = {s[0]: (s[2], s[3]) for s in files["store.ts"]["syms"]}
+        self.assertEqual(got, {"Store": (2, 11), "Store.constructor": (4, 6), "Store.load": (7, 10),
+                               "paint": (12, 14), "Id": (15, 15)})           # comment class ignored, "}" in a string ignored
+        self.assertEqual([(s[0], s[2], s[3]) for s in files["m.go"]["syms"]], [("Srv", 2, 4), ("Srv.Run", 5, 10)])
+        self.assertIn("store.ts:7-10 method Store.load", self.out(ctx.cmd_where, "load")[1])
+
+    def test_git_listing_honours_gitignore(self):
+        import subprocess
+        if subprocess.run(["git", "init", "-q", str(self.root)], capture_output=True).returncode:
+            self.skipTest("no git")
+        (self.root / ".gitignore").write_text("gen/\n")
+        (self.root / "gen").mkdir()
+        (self.root / "gen" / "out.js").write_text("function generated() {}\n")
+        files = ctx.code_index()[1]
+        self.assertNotIn("gen/out.js", files)
+        self.assertIn("app.py", files)                                              # untracked but not ignored
+
+    def test_guard_suggests_outline_for_code_only(self):
+        (self.root / "big.py").write_text("x = 1\n" * (ctx.GUARD_LINES + 50))
+        (self.root / "big.log").write_text("x\n" * (ctx.GUARD_LINES + 50))
+        import contextlib
+        import io
+        for name, want in (("big.py", True), ("big.log", False)):
+            buf = io.StringIO()
+            data = json.dumps({"tool_name": "Read", "tool_input": {"file_path": str(self.root / name)}, "cwd": str(self.root)})
+            with contextlib.redirect_stdout(buf), unittest.mock.patch("sys.stdin", io.StringIO(data)):
+                ctx.hook_guard([])
+            self.assertIn("deny", buf.getvalue())
+            self.assertEqual("ctx.py show" in buf.getvalue(), want)
+
+    def test_guard_inlines_outline(self):
+        (self.root / "big.py").write_text("def first():\n    pass\n" + "x = 1\n" * (ctx.GUARD_LINES + 50) + "def last():\n    pass\n")
+        import contextlib
+        import io
+        buf = io.StringIO()
+        data = json.dumps({"tool_name": "Read", "tool_input": {"file_path": str(self.root / "big.py")}, "cwd": str(self.root)})
+        with contextlib.redirect_stdout(buf), unittest.mock.patch("sys.stdin", io.StringIO(data)):
+            ctx.hook_guard([])
+        self.assertIn("1-2 first", buf.getvalue())
+        self.assertIn(f"{ctx.GUARD_LINES + 53}-{ctx.GUARD_LINES + 54} last", buf.getvalue())
+        with unittest.mock.patch.dict(os.environ, {"CTX_GUARD_OUTLINE": "off"}), contextlib.redirect_stdout(io.StringIO()) as b2, \
+                unittest.mock.patch("sys.stdin", io.StringIO(data)):
+            ctx.hook_guard([])
+        self.assertNotIn("first", b2.getvalue())
+
+    def test_show(self):
+        code, out = self.out(ctx.cmd_show, "total")
+        self.assertEqual(code, 0)
+        self.assertIn("app.py:4-5 method Cart.total", out)
+        self.assertIn("    5\t        return 1", out)
+        self.assertNotIn("checkout", out)
+        self.assertEqual(self.out(ctx.cmd_show, "nope")[0], 1)
+
 if __name__ == "__main__":
     unittest.main()
+
+
+class NewChatHintTest(unittest.TestCase):
+    """new_chat_hint: suggest a fresh chat only once the context is far above a fresh chat's size."""
+
+    def _tp(self, sizes):
+        d = Path(tempfile.mkdtemp())
+        tp = d / "s.jsonl"
+        rows = [{"type": "assistant", "message": {"id": f"m{i}", "model": "claude-opus-5-5",
+                 "usage": {"input_tokens": 0, "cache_read_input_tokens": s, "cache_creation_input_tokens": 0, "output_tokens": 1}}}
+                for i, s in enumerate(sizes)]
+        tp.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+        return tp
+
+    def test_small_chat_keeps_going(self):
+        self.assertEqual(ctx.new_chat_hint(self._tp([70000, 90000]))["pct"], 0)
+
+    def test_big_chat_suggests_new(self):
+        self.assertEqual(ctx.new_chat_hint(self._tp([70000, 120000, 175000]))["pct"], 60)
+
+    def test_no_transcript(self):
+        self.assertEqual(ctx.new_chat_hint(None)["pct"], 0)

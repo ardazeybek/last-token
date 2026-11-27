@@ -364,6 +364,32 @@ run does (run.py passes `--autocompact` itself), and on Opus it lands at ~184K, 
 so no round was spent. Subagent audit (7 days): 90 % of subagent quota = 62 general-purpose Opus agents doing
 real work (bug hunts, fixes, app builds); moving them to a cheaper model would cost intelligence, so it stays off.
 
+### Round 21 — 1.2.0 code map (Haiku, `--effort low`)
+| run | quota % | rules | late rules | recall | tests |
+|---|---|---|---|---|---|
+| r21 k (control: no code map) | 4.14 | 100 % | 98 % | 100 % | 257 ok |
+| r21 n (k + code map) | 3.72 | 97 % | 96 % | 100 % | 254 ok |
+n: −10 % quota vs k in the same round (−3 % tokens, end context 33K vs 45K), quality equal within noise.
+The model called `where/uses/outline/map` 26 times. Same round, run in parallel; r20 k was 3.60 (run-to-run noise ≈ 15 %),
+so one round is a hint, not proof. Results `results/r21-*.json`.
+
+### Round 22 — version vs version: 1.1.x (8c31014) ↔ 1.3.0 (Haiku, `--effort low`, each twice)
+New method: the previous release runs from a git worktree (`run.py --system /var/tmp/lt-prev/system`) in the same round.
+| run | quota % | calls | rules | late rules | recall | tests |
+|---|---|---|---|---|---|---|
+| prev (1.1.x) ×2 | 4.19 / 4.27 (avg 4.23) | 207 / 200 | 99 / 99 % | 98 / 97 % | 100 % | ok / FAIL |
+| base (1.3 code map, levers off) ×2 | 3.99 / 4.21 (avg 4.10, −3 %) | 200 / 204 | 99 / 98 % | 97 / 95 % | 100 % | ok / ok |
+| new (1.3.0 full) ×2 | 3.98 / 3.96 (avg 3.97, −6 %) | 188 / 194 | 100 / 98 % | 100 / 97 % | 100 % | ok / ok |
+1.3.0 = code map rework (`git ls-files`, brace-matched ranges, Class.method in JS/TS/Go) + two levers that cut calls:
+`show <name>` (a symbol's code in one call instead of where + Read) and the file outline inside the guard deny
+(no extra `outline` call). Both runs of `new` are below all four others; the gap is inside run-to-run noise for a single
+pair but consistent across pairs, so the levers stay. Counts: `new` called `show` 24× per run (where/uses/outline 0×); the guard outline never fired
+(no whole read of a big code file in this fixture), so the gain is from `show`; the outline lever stays as untested-in-bench, covered by unit tests. Results `results/r22-*.json`.
+
+Real use (`bench/usage.py`, all transcripts to 2026-11-27, 71 sessions on / 224 off): with last-token quota per API call
+−18 %, mean context 105K vs 170K; quota split cache write 44 % / cache read 47 % / output 9 %; cold re-writes
+(cache expired, > 50 % of the prompt re-written) = 14 % of quota → next lever; post-compaction re-write 2 %.
+
 ### Stop
 
 Rounds 3 and 4 both failed to beat round 2 → the loop stopped after 4 rounds (limit 5).
@@ -431,3 +457,25 @@ python3 bench/score.py --table results/*.json
 
 A full run takes 35–45 minutes. If the account usage limit is hit, `run.py` stops cleanly and
 prints the `--steps N-32` to resume with (the partial turn is rolled back first).
+
+## Round 23 — terse-output rule (1.4.0)
+
+Idea from output-compression tools (e.g. "caveman"-style prompts): output tokens cost about as much as cache writes, so the protocol gains rule 6 — write tersely, no preamble/recap, batch independent tool calls. Haiku, low effort, 2 runs each, version vs version.
+
+| version | quota % (runs) | mean | calls |
+|---|---|---|---|
+| 1.3.0 | 3.96 / 4.03 | 4.00 | 191 / 199 |
+| 1.4.0 (rule 6) | 3.62 / 3.55 | **3.59 (−10 %)** | 191 / 182 |
+
+Quality equal (rules 99 %, recall 100 %, applied 100 %). One `new` run had a failing fixture test, as `prev` did in round 22: noise, not the rule. Kept.
+
+## Round 24 — 1.5.0 cold digest (2026-11-27)
+- Lever: after a pause longer than the cache TTL (1 h) the whole history is re-written to cache anyway
+  (real use: cold rewrites ≈ 14 % of quota). 1.5.0 sends the ctx.py digest + the new prompt instead of the
+  full history on that request and keeps the cut while warm. The UI still shows the whole conversation.
+- Not measurable with `run.py`: its 32 steps run back-to-back, never cold. Checked by unit tests
+  (`prune.test.tsx`: cut applied, kept stable, dropped on rewind) and by `bench/usage.py` on real use later.
+
+## 1.6.0 new-chat hint (2026-11-28) — no new round
+Status line shows `new task? new chat −N%/msg` once the context is ≥1.6× and ≥50K above the session's
+first request (a fresh chat's size). Advice only; does not change what a bench run does.

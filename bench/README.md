@@ -13,6 +13,7 @@ long spec, a legacy module and a 3,000-line log) with headless Claude Code under
 | k | c + the mod (`--plugin-dir system/mod`) |
 | l | k at a lower trigger |
 | m | k + `effortLevel: low` (best measured) |
+| n | k + code map (1.2: `where`/`uses`/`outline`/`map` in the protocol, outline hint in the guard; 1.3: `show`, outline inside the guard deny) |
 
 All conditions: same model, same tools (`Task,Bash,Read,Edit,Write,Skill`), `--autocompact 200000`
 (200K reference window), `--setting-sources project` (your user settings/hooks are not loaded),
@@ -29,6 +30,7 @@ otherwise. A turn that hits a network error or whose transcript stalls for 6 min
 | `resume.sh` | wraps `run.py`: after a rate-limit/network stop waits 20 min and resumes with the printed `--steps` |
 | `score.py` | scores a run (tokens, peak fill, rules R1–R10, recall, tests); `--table` prints markdown |
 | `quota_probe.py` / `usage_window.py` | spend one token type / sum all sessions' usage in a time window: fit the plan quota formula (RESEARCH.md) |
+| `usage.py` | real use: scans every saved transcript (main + subagents), splits last-token on/off; numbers only (quota share, cold re-writes, compactions, guard denials, code-map calls) |
 | `probes/probe_compaction.sh` | reproduces the Claude Code behaviours the design relies on |
 
 ```bash
@@ -36,6 +38,16 @@ python3 bench/run.py --cond a --dir /tmp/bench/r1/a      # also b, c, d (can run
 python3 bench/score.py /tmp/bench/r1/a --out results/r1-a.json
 python3 bench/score.py --table results/*.json
 ```
+
+Version vs version (since round 22): check the previous release out into a worktree and run both in the same round,
+each twice (run-to-run noise ≈ 15 %):
+
+```bash
+git worktree add /var/tmp/lt-prev <previous-release-commit>
+bench/resume.sh /var/tmp/bench/r22/prev1.log --cond n --model haiku --effort low --dir /var/tmp/bench/r22/prev1 --system /var/tmp/lt-prev/system
+bench/resume.sh /var/tmp/bench/r22/new1.log  --cond n --model haiku --effort low --dir /var/tmp/bench/r22/new1
+```
+`--system DIR` = that version's `system/` (ctx.py + mod); `--env KEY=VAL` and `--noshow` switch single levers off (ablation).
 
 Metrics: total tokens = input + output + cache read + cache write from Claude Code's cumulative
 per-session `modelUsage` (includes compaction calls and subagents), summed over sessions.

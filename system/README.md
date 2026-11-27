@@ -2,7 +2,7 @@
 
 | file | purpose |
 |---|---|
-| `ctx.py` | the whole system (stdlib Python): install, agent commands (`rule`, `decide`, `note`, `recall`, `status`, `check`, `audit`, `savings`, `panel`, `tune`: per-model compaction window from your usage, `self-update`: pull + reinstall from GitHub, a background Claude session repairs a failed update, `mod`, `compact-summary`) the hooks (`hook-precompact`, `hook-guard`: read guard, `hook-session`: global-mode memory injection, daily retune, update check every 3 h) and `global on|off` |
+| `ctx.py` | the whole system (stdlib Python): install, agent commands (`rule`, `decide`, `note`, `recall`, `status`, `check`, `audit`, `savings`, `panel`, `tune`: per-model compaction window from your usage, `self-update`: pull + reinstall from GitHub, a background Claude session repairs a failed update, `mod`, `compact-summary`, code map: `show`, `where`, `uses`, `outline`, `map` → `.ctx/codemap.json`; `git ls-files` listing, brace-matched ranges, Class.method names in JS/TS/Go/…) the hooks (`hook-precompact`, `hook-guard`: read guard, `hook-session`: global-mode memory injection, daily retune, update check every 3 h) and `global on|off` |
 | `autoinstall.sh` | optional user `SessionStart` hook (copied to `~/.claude/last-token/`): installs into code projects under `~/PROJECTS/` (git repo or a project file), refreshes their `.ctx/ctx.py` copy and (global mode) `~/.claude/last-token/ctx.py`, skips projects with `.no-last-token`, logs to `~/.claude/last-token/autoinstall.log` |
 | `tests/test_ctx.py` | unit tests: digest content, task-list replay, Turkish decisions, savings, global mode (`python3 -m unittest discover system/tests`) |
 | `tests/test_fixes.py` | regression tests, one per finding of the 2026-11-20 audit |

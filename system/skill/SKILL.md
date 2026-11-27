@@ -13,6 +13,13 @@ The always-on part of the protocol is the block in `CLAUDE.md`. This skill holds
 3. Read only around the hit: `Read <path>` with `offset=<line-20>` `limit=60`.
 4. Use the value. Do not paste the archived text back into the chat; write results to files.
 
+## Find code without reading whole files
+- `python3 .ctx/ctx.py show <name>` → the code of one function/class/method, numbered (no separate Read needed).
+- `python3 .ctx/ctx.py where <name>` → `file:start-end kind name: signature` of a function/class/method.
+- `python3 .ctx/ctx.py uses <name>` → `file:line [enclosing function]: text` of every use (definition left out).
+- `python3 .ctx/ctx.py outline <file>` → all symbols of a file with line ranges; then Read `offset=start limit=end-start+1`.
+- `python3 .ctx/ctx.py map [dir]` → one line per code file with its top-level symbols.
+
 ## Write a note when a subtask is done
 ```bash
 python3 .ctx/ctx.py note "Pricing port" "bulk tiers 50/250/1000; HALF_EVEN rounding" <<'EOF'

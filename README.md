@@ -1,7 +1,7 @@
 <div align="center">
   <img src="assets/logo.svg" alt="Last Token logo" width="104" />
   <h1>Last Token</h1>
-  <p><strong>Make your Claude Code plan last longer: −28 % plan quota on the same work.</strong></p>
+  <p><strong>Make your Claude Code plan last longer: −68 % plan quota on the same work.</strong></p>
   <p>A drop-in add-on for Claude Code that spends your quota where it is cheap. Same work, same quality, nothing forgotten.</p>
 
   <p>
@@ -36,7 +36,7 @@
 </div>
 
 <p align="center">
-  <img src="assets/banner.png" alt="Last Token: get more out of your Claude plan. −28 % plan quota per task, one file to install, zero settings." width="100%" />
+  <img src="assets/banner.png" alt="Last Token: get more out of your Claude plan. −68 % plan quota per task, one file to install, zero settings." width="100%" />
 </p>
 
 ---
@@ -53,10 +53,14 @@ You keep working like always. Last Token works in the background and shows you w
 
 ---
 
+## 🚦 It tells you when to start fresh
+
+<p align="center"><img src="assets/whats-new.png" width="100%" alt="A live line above your prompt. Green: Last Token Active −68% quota. Red when it pays off: This chat is long. Starting a new chat for your next task uses about 47% less quota per message. Also new: new-chat hint, cold digest after an hour away, code map that jumps to a function, terse mode with no preambles or recaps." /></p>
+
 ## ✨ Why Last Token?
 
 <p align="center">
-  <img src="assets/highlights.png" width="100%" alt="Lasts longer: the same task takes 28 % less of your 5-hour window. Same quality: rules kept, facts recalled, tests passing. Stays local: one Python file, no server, no account, no telemetry. No setup: drop one file into Claude Code." />
+  <img src="assets/highlights.png" width="100%" alt="Lasts longer: the same task takes 68 % less of your 5-hour window. Same quality: rules kept, facts recalled, tests passing. Stays local: one Python file, no server, no account, no telemetry. No setup: drop one file into Claude Code." />
 </p>
 
 ---
@@ -141,7 +145,7 @@ A backup of your `~/.claude/settings.json` is also written on every install (`se
 
 ## 📊 The benchmark
 
-<img src="assets/benchmark.png" alt="Benchmark: plain 4.99%, LLM-summary 7.84%, Last Token 3.60%" width="100%">
+<img src="assets/benchmark.png" alt="Same work, 68 % less plan quota. Plain Claude Code = 100, Last Token 1.7 = 32, LLM-summary compaction = 157. Rules, recall and tests stay the same." width="100%">
 
 <p align="center"><sub>20+ rounds, every failed idea included: <a href="docs/BENCHMARK.md">BENCHMARK.md</a> · raw runs: <a href="results/">results/</a> · run it yourself: <a href="bench/README.md">bench/</a></sub></p>
 
@@ -162,6 +166,7 @@ python3 ~/.claude/last-token/ctx.py doctor          # check every part
 python3 ~/.claude/last-token/ctx.py audit           # what your fixed per-request context is made of
 python3 ~/.claude/last-token/ctx.py tune            # re-compute per-model compaction points now
 python3 ~/.claude/last-token/ctx.py recall <word>   # find an archived detail
+python3 ~/.claude/last-token/ctx.py show <name>     # code map: one function's code (also where, uses, outline, map)
 ```
 
 Per-project install instead of global: `./install.sh <project-dir>`. Developer quota pane:
