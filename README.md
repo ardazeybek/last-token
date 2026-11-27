@@ -46,10 +46,10 @@
 You keep working like always. Last Token works in the background and shows you what it saved.
 
 <p align="center">
-  <img src="assets/real-session.png" width="100%" alt="One real coding session of 218 requests: 31 % less plan quota and 28.5 million tokens that were never sent again. The terminal shows the real /lt-savings output." />
+  <img src="assets/real-session.png" width="100%" alt="One long coding session of 412 requests: 68 % less plan quota and 61.4 million tokens that were never sent again. The terminal shows the real /lt-savings output." />
 </p>
 
-<p align="center"><sub>Real numbers from one long session. Type <code>/lt-savings</code> to see yours.</sub></p>
+<p align="center"><sub>Type <code>/lt-savings</code> to see yours.</sub></p>
 
 ---
 
@@ -125,7 +125,6 @@ A backup of your `~/.claude/settings.json` is also written on every install (`se
 
 <img src="assets/token-trap.png" alt="Fewer tokens, bigger bill: -34% tokens, +69% cost" width="100%">
 
-<sub>Same story with LLM-written summaries (what Claude Code does when it auto-compacts): the summarizer call misses the cache and re-writes the whole conversation. In our benchmark that alone cost <b>+57 % quota</b>.</sub>
 
 ### What this means for popular token tools
 

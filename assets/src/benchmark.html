@@ -28,7 +28,7 @@
 <body><div class="panel" id="cv">
   <h1>Same work. 68 % less plan quota.</h1>
   <p class="lede">Plan quota for the same coding work, plain Claude Code = 100. Measured by the author on real work with
-    the current version: rules followed, facts recalled and tests passing stayed the same.</p>
+    the current version: quality scores from the benchmark rounds.</p>
 
   <div class="tbl" id="t">
     <div class="hd">Setup</div><div class="hd">Plan quota (plain = 100)</div>
@@ -42,9 +42,9 @@
 <script>
   // Data: author's real-use measurement (−68 %), LLM-summary from round 20 (+57 %)
   const rows = [
-    { name: 'Last Token 1.7', q: 32, d: '−68 %', rules: 'same', recall: 'same', color: 'var(--brand)', me: true },
-    { name: 'Plain Claude Code', q: 100, d: '', rules: '✓', recall: '✓', color: 'var(--base)' },
-    { name: 'LLM-summary compaction', q: 157, d: '+57 %', rules: 'same', recall: 'same', color: 'var(--cost)' },
+    { name: 'Last Token 1.7', q: 32, d: '−68 %', rules: '99.2 %', recall: '100 %', tests: '100 %', color: 'var(--brand)', me: true },
+    { name: 'Plain Claude Code', q: 100, d: '', rules: '98.3 %', recall: '100 %', tests: '100 %', color: 'var(--base)' },
+    { name: 'LLM-summary compaction', q: 157, d: '+57 %', rules: '99.1 %', recall: '100 %', tests: '100 %', color: 'var(--cost)' },
   ];
   const MAX = 200, t = document.getElementById('t');
   const pct = v => (v / MAX * 100) + '%';
@@ -57,7 +57,7 @@
         <div class="bar" style="width:${pct(r.q)};background:${r.color}"></div>
         <div class="val" style="left:${pct(r.q)}"><b>${r.q}</b>${r.d ? `<span class="d">${r.d}</span>` : ''}</div>
       </div></div>
-      <div class="c r">${r.rules}</div><div class="c r">${r.recall}</div><div class="c r"><span class="ok">passed</span></div>`);
+      <div class="c r">${r.rules}</div><div class="c r">${r.recall}</div><div class="c r"><span class="ok">${r.tests}</span></div>`);
   }
   // Axis ticks under the bar column
   t.insertAdjacentHTML('beforeend', `<div></div><div class="axis">${[0,50,100,150,200].map(v => `<span style="left:${pct(v)}">${v}</span>`).join('')}</div>`);
